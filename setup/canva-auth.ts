@@ -138,7 +138,12 @@ async function stepExchange(callbackUrl: string): Promise<void> {
         client_id:     CLIENT_ID,
         client_secret: clientSecret,
       }).toString(),
-      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Origin': 'http://127.0.0.1:8080',
+        },
+      }
     );
     responseData = response.data;
   } catch (err) {
