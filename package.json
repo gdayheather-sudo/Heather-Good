@@ -9,7 +9,8 @@
     "dev": "ts-node index.ts",
     "pipeline": "ts-node index.ts",
     "pipeline:force": "FORCE_REFRESH=true ts-node index.ts",
-    "linkedin": "ts-node linkedin.ts"
+    "linkedin": "ts-node linkedin.ts",
+    "canva-auth": "ts-node setup/canva-auth.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.36.0",
