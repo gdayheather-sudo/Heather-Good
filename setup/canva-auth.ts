@@ -22,7 +22,7 @@ dotenv.config();
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const CLIENT_ID    = 'OC-AZ1_ucdeUUtm';
-const REDIRECT_URI = 'http://127.0.0.1:8080';
+const REDIRECT_URI = 'https://www.linkedin.com/in/heather-good-aa2ab679/callback';
 const AUTH_URL     = 'https://www.canva.com/api/oauth/authorize';
 const TOKEN_URL    = 'https://www.canva.com/api/oauth/token';
 const STATE_FILE   = path.join(process.cwd(), '.canva-state.json');
