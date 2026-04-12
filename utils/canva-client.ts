@@ -44,6 +44,23 @@ export interface CanvaDesign {
   urls: CanvaDesignUrls;
 }
 
+export interface BrandKitColor {
+  name?: string;
+  color: { hex: string };
+}
+
+export interface BrandKitFont {
+  name: string;
+  weights?: string[];
+}
+
+export interface BrandKit {
+  id: string;
+  name: string;
+  colors?: { palette: BrandKitColor[] };
+  fonts?: { primary: BrandKitFont[] };
+}
+
 // ── Client ───────────────────────────────────────────────────────────────────
 
 export class CanvaClient {
@@ -179,6 +196,23 @@ export class CanvaClient {
 
     const timeoutSecs = (MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS) / 1000;
     throw new Error(`Canva export job timed out after ${timeoutSecs}s`);
+  }
+
+  /**
+   * Fetch a brand kit by ID. Used to surface brand colours/fonts in
+   * confirmation output and to validate the token has brandkit:content:read scope.
+   */
+  async getBrandKit(brandKitId: string): Promise<BrandKit> {
+    try {
+      const { data } = await this.http.get(`/brand-kits/${brandKitId}`);
+      return data.brand_kit as BrandKit;
+    } catch (err) {
+      const e = err as AxiosError;
+      const detail = e.response
+        ? `HTTP ${e.response.status}: ${JSON.stringify(e.response.data)}`
+        : e.message;
+      throw new Error(`Failed to fetch brand kit ${brandKitId} — ${detail}`);
+    }
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────

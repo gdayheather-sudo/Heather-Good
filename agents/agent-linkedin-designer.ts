@@ -1,5 +1,5 @@
 import path from 'path';
-import { CanvaClient, AutofillData } from '../utils/canva-client';
+import { CanvaClient, AutofillData, BrandKit } from '../utils/canva-client';
 import { ensureDir } from '../utils/file-helpers';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -26,6 +26,7 @@ export interface LinkedInDesignResult {
 // ── Brand constants ──────────────────────────────────────────────────────────
 
 const BRAND_FOOTER = 'The Clarity Hub';
+const BRAND_KIT_ID = 'kAEJPAKgFYU'; // https://www.canva.com/brand/kAEJPAKgFYU
 const MAX_HOOK_WORDS = 12;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -72,21 +73,38 @@ function getEnvTemplate(key: string, label: string, dimensions: string): string 
     throw new Error(
       `${key} is not set in .env\n\n` +
       `To set up the ${label} template (${dimensions}):\n` +
-      `  1. Open Canva and create a new design at ${dimensions}\n` +
-      `  2. Apply The Clarity Hub brand kit\n` +
+      `  1. Open Canva and go to The Clarity Hub brand kit:\n` +
+      `     https://www.canva.com/brand/kAEJPAKgFYU\n` +
+      `  2. Create a new design at ${dimensions} using this brand kit\n` +
       `     — Background: Warm White #F7F4EF\n` +
-      `     — Hook text: DM Serif Display (large, prominent)\n` +
-      `     — Body text: DM Sans (medium weight)\n` +
+      `     — Hook text: DM Serif Display (large, most prominent)\n` +
+      `     — Body text: DM Sans (medium weight, min 18px)\n` +
       `     — CTA text: DM Sans (small, Soft Clay or Muted Sage tone)\n` +
-      `     — Footer: DM Sans (small, bottom of design)\n` +
-      `  3. Select each text element → "Connect data" → name it:\n` +
-      `     hook | body_text | cta | footer\n` +
-      `  4. Click "Share" → "Brand template" → copy the template ID\n` +
-      `     (the ID is in the URL: canva.com/brand-templates/<ID>/edit)\n` +
+      `     — Footer: "The Clarity Hub", DM Sans small, bottom of design\n` +
+      `  3. Select each text element → "Connect data" in the right panel\n` +
+      `     → name it exactly: hook | body_text | cta | footer\n` +
+      `  4. Click "Share" → "Brand template" → "Publish"\n` +
+      `     Copy the template ID from the URL:\n` +
+      `     canva.com/brand-templates/<ID>/edit\n` +
       `  5. Add to .env: ${key}=<paste-id-here>`
     );
   }
   return value;
+}
+
+function formatBrandKitSummary(kit: BrandKit): string {
+  const colors = kit.colors?.palette
+    .map(c => `${c.name ? c.name + ' ' : ''}${c.color.hex}`)
+    .slice(0, 5)
+    .join(', ');
+  const fonts = kit.fonts?.primary
+    .map(f => f.name)
+    .slice(0, 3)
+    .join(', ');
+  const parts: string[] = [];
+  if (colors) parts.push(`colours: ${colors}`);
+  if (fonts)  parts.push(`fonts: ${fonts}`);
+  return parts.length ? `  Brand kit "${kit.name}": ${parts.join(' | ')}` : '';
 }
 
 // ── Main agent ────────────────────────────────────────────────────────────────
@@ -109,6 +127,18 @@ export async function runLinkedInDesigner(
   );
 
   const client = new CanvaClient();
+
+  // ── Confirm brand kit is accessible (validates token scope too) ───────────
+  const brandKitId = process.env.CANVA_BRAND_KIT_ID ?? BRAND_KIT_ID;
+  try {
+    const kit = await client.getBrandKit(brandKitId);
+    const summary = formatBrandKitSummary(kit);
+    if (summary) console.log(summary);
+  } catch {
+    // Non-fatal — brand kit fetch is best-effort; missing brandkit:content:read
+    // scope won't block the autofill flow
+    console.log(`  Brand kit ${brandKitId} (fetch skipped — add brandkit:content:read scope to see palette)`);
+  }
 
   // ── Validate hook length ──────────────────────────────────────────────────
   const hookWords = wordCount(input.hook);
