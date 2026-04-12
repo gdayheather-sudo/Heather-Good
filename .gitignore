@@ -17,6 +17,9 @@ output/publish-log.json
 # LinkedIn graphic exports
 output/linkedin/
 
+# Canva OAuth temporary state (deleted automatically after auth)
+.canva-state.json
+
 # OS
 .DS_Store
 Thumbs.db
