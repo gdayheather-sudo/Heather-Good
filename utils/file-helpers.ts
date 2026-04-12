@@ -1,0 +1,33 @@
+import fs from 'fs';
+import path from 'path';
+
+export function ensureDir(dirPath: string): void {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+}
+
+export function writeJson(filePath: string, data: unknown): void {
+  ensureDir(path.dirname(filePath));
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+export function readJson<T>(filePath: string): T | null {
+  if (!fs.existsSync(filePath)) return null;
+  const raw = fs.readFileSync(filePath, 'utf-8');
+  return JSON.parse(raw) as T;
+}
+
+export function fileExists(filePath: string): boolean {
+  return fs.existsSync(filePath);
+}
+
+export function writeText(filePath: string, content: string): void {
+  ensureDir(path.dirname(filePath));
+  fs.writeFileSync(filePath, content, 'utf-8');
+}
+
+export function appendText(filePath: string, content: string): void {
+  ensureDir(path.dirname(filePath));
+  fs.appendFileSync(filePath, content, 'utf-8');
+}

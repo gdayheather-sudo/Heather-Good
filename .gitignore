@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment — NEVER commit real keys
+.env
+
+# Pipeline output (generated files — commit if you want version history)
+output/cache/
+output/social-content/
+output/*.json
+output/*.md
+output/publish-log.json
+
+# OS
+.DS_Store
+Thumbs.db
