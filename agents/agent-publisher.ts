@@ -28,6 +28,14 @@ interface PublishLog {
 }
 
 const APPROVED_PATH = path.join('output', 'approved-listings.json');
+
+// Filter listings to only Notion-approved ones when running in live mode
+function filterByNotionApprovals(listings: ReviewedListing[]): ReviewedListing[] {
+  const notionIds = process.env.NOTION_APPROVED_IDS;
+  if (!notionIds) return listings; // no filter — use all approved
+  const approvedSet = new Set(notionIds.split(',').filter(Boolean));
+  return listings.filter(l => approvedSet.has(l.listing_id));
+}
 const SOCIAL_CONTENT_DIR = path.join('output', 'social-content');
 const REPORT_PATH = path.join('output', 'social-content-report.md');
 const PUBLISH_LOG_PATH = path.join('output', 'publish-log.json');
@@ -112,7 +120,11 @@ export async function runPublisher(): Promise<void> {
   const approvedData = readJson<ApprovedListings>(APPROVED_PATH);
   if (!approvedData) throw new Error('approved-listings.json not found — run Listing Reviewer first');
 
-  const approvedListings = approvedData.listings.filter(l => l.approved);
+  const allApproved = approvedData.listings.filter(l => l.approved);
+  const approvedListings = filterByNotionApprovals(allApproved);
+  if (process.env.NOTION_APPROVED_IDS) {
+    console.log(`      Notion filter active: ${approvedListings.length}/${allApproved.length} listings approved for publishing`);
+  }
   ensureDir(SOCIAL_CONTENT_DIR);
 
   // Load all generated content

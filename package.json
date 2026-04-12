@@ -8,7 +8,8 @@
     "start": "node dist/index.js",
     "dev": "ts-node index.ts",
     "pipeline": "ts-node index.ts",
-    "pipeline:force": "FORCE_REFRESH=true ts-node index.ts"
+    "pipeline:force": "FORCE_REFRESH=true ts-node index.ts",
+    "publish": "ts-node index.ts --publish-only"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.36.0",
