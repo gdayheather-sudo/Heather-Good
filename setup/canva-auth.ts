@@ -24,7 +24,7 @@ dotenv.config();
 const CLIENT_ID    = 'OC-AZ1_ucdeUUtm';
 const REDIRECT_URI = 'http://127.0.0.1:8080';
 const AUTH_URL     = 'https://www.canva.com/api/oauth/authorize';
-const TOKEN_URL    = 'https://api.canva.com/rest/v1/oauth/token';
+const TOKEN_URL    = 'https://www.canva.com/api/oauth/token';
 const STATE_FILE   = path.join(process.cwd(), '.canva-state.json');
 const SCOPES       = [
   'design:content:write',
