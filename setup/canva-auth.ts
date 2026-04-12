@@ -32,7 +32,6 @@ const SCOPES       = [
   'design:meta:read',
   'brandtemplate:content:read',
   'brandtemplate:meta:read',
-  'brandkit:content:read',
   'asset:read',
 ].join(' ');
 
