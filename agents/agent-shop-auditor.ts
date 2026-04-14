@@ -2,6 +2,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { EtsyClient, EtsyListing } from '../utils/etsy-client';
 import { parseEtsyCsv } from '../utils/etsy-csv-parser';
+import { fetchEtsyRss } from '../utils/etsy-rss-parser';
 import { writeJson, readJson, fileExists } from '../utils/file-helpers';
 
 dotenv.config();
@@ -78,11 +79,31 @@ export async function runShopAuditor(): Promise<ShopAudit> {
   } catch (err: unknown) {
     const status = (err as { response?: { status?: number } })?.response?.status;
     if (status === 403) {
+      // ── RSS fallback: fetch from public shop feed ─────────────────────────
+      console.log('      ⚠ Etsy API pending approval — falling back to public RSS feed...');
+      console.log('      (RSS includes ~25 most-recent listings; use CSV export for all 472)');
+      try {
+        const rssListings = await fetchEtsyRss(shopId);
+        if (rssListings.length > 0) {
+          console.log(`      ✓ Fetched ${rssListings.length} listings via RSS`);
+          const audit: ShopAudit = {
+            shop_id: shopId,
+            shop_name: shopId,
+            total_active_listings: rssListings.length,
+            fetched_at: new Date().toISOString(),
+            listings: rssListings,
+          };
+          writeJson(CACHE_PATH, audit);
+          writeJson(OUTPUT_PATH, audit);
+          return audit;
+        }
+      } catch (rssErr) {
+        console.warn(`      ⚠ RSS fallback also failed: ${(rssErr as Error).message}`);
+      }
       throw new Error(
-        'Etsy API returned 403 — your app is still "Pending Personal Approval".\n\n' +
-        'Option A: Wait 1-3 days for Etsy to approve your developer app, then retry.\n' +
-        'Option B: Export your listings manually and use the CSV fallback:\n' +
-        '  1. Go to Sell on Etsy → Listings → Download\n' +
+        'Etsy API returned 403 — app is still "Pending Personal Approval".\n\n' +
+        'While waiting for approval, use the CSV fallback:\n' +
+        '  1. Go to Sell on Etsy → Listings → select all → Editing options → Download\n' +
         '  2. Save the file as "listings.csv" in your Heather-Good project folder\n' +
         '  3. Run npm run pipeline again\n'
       );
