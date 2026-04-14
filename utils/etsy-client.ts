@@ -70,12 +70,19 @@ export class EtsyClient {
     this.apiKey = process.env.ETSY_API_KEY || '';
     if (!this.apiKey) throw new Error('ETSY_API_KEY is not set in .env');
 
+    const accessToken = process.env.ETSY_ACCESS_TOKEN || '';
+    const headers: Record<string, string> = {
+      'x-api-key': this.apiKey,
+      'Accept': 'application/json',
+    };
+    // Use OAuth Bearer token when available (required when app is pending approval)
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+
     this.client = axios.create({
       baseURL: ETSY_BASE_URL,
-      headers: {
-        'x-api-key': this.apiKey,
-        'Accept': 'application/json',
-      },
+      headers,
       timeout: 15000,
     });
   }
