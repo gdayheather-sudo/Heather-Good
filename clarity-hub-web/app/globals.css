@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --warm-white: #F7F4EF;
+  --charcoal: #2E2E2E;
+  --navy: #3F5366;
+  --sage: #8FA79A;
+  --clay: #C97E63;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--warm-white);
+  color: var(--charcoal);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 {
+  font-family: 'DM Serif Display', serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--navy);
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: var(--sage);
+  color: var(--warm-white);
+}
+
+.btn-clay {
+  display: inline-block;
+  background: var(--clay);
+  color: var(--warm-white);
+  padding: 0.9rem 1.6rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: transform 150ms ease, background 150ms ease;
+}
+
+.btn-clay:hover {
+  background: #b46e55;
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  display: inline-block;
+  padding: 0.9rem 1.6rem;
+  border-radius: 9999px;
+  border: 1px solid var(--navy);
+  color: var(--navy);
+  font-weight: 500;
+  transition: background 150ms ease;
+}
+
+.btn-ghost:hover {
+  background: rgba(63, 83, 102, 0.08);
+}
