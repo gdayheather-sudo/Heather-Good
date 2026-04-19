@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Education — The Clarity Hub</title>
+    <meta
+      name="description"
+      content="Workshops, guides, and frameworks that help founders build calmer systems on their own."
+    />
+    <link rel="icon" type="image/png" href="public/The%20Clarity%20Hub%20Logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a href="index.html" class="brand" aria-label="The Clarity Hub home">
+          <span class="brand__text">
+            <span class="brand__name">The Clarity <em>Hub</em></span>
+            <span class="brand__tagline">Clarity &middot; Systems &middot; Calm Growth</span>
+          </span>
+        </a>
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="primary-nav"
+        >
+          <span></span><span></span><span></span>
+        </button>
+        <nav id="primary-nav" class="nav" hidden>
+          <a href="education.html">Education</a>
+          <a href="consulting.html">Consulting</a>
+          <a href="tools.html">Tools</a>
+          <a href="index.html#contact">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="page-hero">
+        <div class="container">
+          <a href="index.html" class="page-hero__back">&larr; Back to home</a>
+          <p class="page-hero__num">01 &mdash; Education</p>
+          <h1 class="page-hero__title"><em>Education</em></h1>
+          <p class="page-hero__lede">
+            Learn to build calmer systems &mdash; without adding another course to the pile.
+          </p>
+        </div>
+      </section>
+
+      <section class="page-section">
+        <div class="container page-section__inner">
+          <p>
+            Workshops, guides, and frameworks designed for founders who want to bring order to
+            complexity themselves. Practical sessions that fit around the way you already work
+            &mdash; not theory and not hustle.
+          </p>
+          <p>
+            We&rsquo;re building a small library of self&#8209;paced material and live
+            workshops on capture, prioritisation, visibility, and the lightweight systems that
+            make growth feel less reactive.
+          </p>
+          <p>
+            New programmes open in small cohorts. Add your name below to be the first to hear
+            when the next intake opens.
+          </p>
+        </div>
+      </section>
+
+      <section class="waitlist">
+        <div class="container waitlist__inner">
+          <p class="waitlist__eyebrow">Waiting List</p>
+          <h2 class="waitlist__title">Join the <em>Education</em> waiting list.</h2>
+          <p class="waitlist__body">
+            Be first to hear about upcoming workshops, guides, and frameworks &mdash; no spam,
+            no noise.
+          </p>
+
+          <form
+            class="contact-form"
+            action="https://formspree.io/f/YOUR_FORM_ID"
+            method="POST"
+          >
+            <input type="hidden" name="_subject" value="Waiting list — Education" />
+            <input type="hidden" name="interest" value="Education" />
+            <div class="field">
+              <label for="name">Name</label>
+              <input id="name" name="name" type="text" required autocomplete="name" />
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" required autocomplete="email" />
+            </div>
+            <div class="field">
+              <label for="business">Business (optional)</label>
+              <input id="business" name="business" type="text" autocomplete="organization" />
+            </div>
+            <div class="field">
+              <label for="notes">Anything you&rsquo;d like us to know? (optional)</label>
+              <textarea id="notes" name="notes" rows="4"></textarea>
+            </div>
+            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="hp" />
+            <button class="btn btn--primary" type="submit">Join the waiting list</button>
+            <p class="contact-form__note">
+              Or email <a href="mailto:hello@clarityhub.com.au">hello@clarityhub.com.au</a>
+            </p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <p class="brand brand--footer">
+          <span class="brand__name">The Clarity <em>Hub</em></span>
+          <span class="brand__tagline">Clarity &middot; Systems &middot; Calm Growth</span>
+        </p>
+        <p class="site-footer__belief">
+          &ldquo;Calm isn&rsquo;t something you find. It&rsquo;s something you build.&rdquo;
+        </p>
+        <p class="site-footer__meta">
+          &copy; <span id="year"></span> The Clarity Hub. All rights reserved.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+      const toggle = document.querySelector('.nav-toggle');
+      const nav = document.getElementById('primary-nav');
+      toggle.addEventListener('click', () => {
+        const open = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!open));
+        toggle.setAttribute('aria-label', open ? 'Open menu' : 'Close menu');
+        nav.hidden = open;
+      });
+    </script>
+  </body>
+</html>
