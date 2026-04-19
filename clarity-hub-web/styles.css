@@ -417,7 +417,6 @@ a {
   font-style: italic;
   font-weight: 600;
   font-size: 1.08em;
-  margin-left: 4px;
   line-height: 1;
   position: relative;
   top: 0.04em;
@@ -559,19 +558,13 @@ a {
   border-color: rgba(28, 31, 38, 0.1);
 }
 
-/* Italic "Layer" wordmark — sage, except inside sage section */
+/* Italic "Layer" wordmark — sage-deep, except on sage section */
 .kw-layer {
   color: var(--sage-deep);
 }
 
 .stack .kw-layer {
   color: var(--ink);
-}
-
-/* Ghost-on-purple button: use cream for contrast */
-.btn--ghost-light .kw-layer,
-.layer__title .kw-layer {
-  color: var(--cream);
 }
 
 .prose p {
@@ -888,7 +881,7 @@ a {
 .layer__title em {
   font-style: italic;
   font-weight: 600;
-  color: var(--cream);
+  color: var(--sage-deep);
 }
 
 .layer__body {
