@@ -1460,3 +1460,9 @@ a {
 .about-connect {
   margin-top: 40px;
 }
+
+/* About page header accent — brand purple */
+.page-hero--brand .page-hero__title,
+.page-hero--brand .page-hero__lede {
+  color: var(--purple);
+}
