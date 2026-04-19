@@ -538,22 +538,22 @@ a {
    ================================================================ */
 .foundation {
   padding: 96px 0 104px;
-  background: var(--sage-pale);
+  background: var(--sage-deep);
   color: var(--ink);
   position: relative;
 }
 
 .foundation .eyebrow {
-  color: var(--sage-deep);
+  color: var(--cream);
 }
 
 .foundation .eyebrow__rule {
-  background: rgba(141, 163, 149, 0.5);
+  background: rgba(245, 239, 228, 0.35);
 }
 
 .foundation .card {
   background: var(--cream);
-  border-color: rgba(141, 163, 149, 0.35);
+  border-color: rgba(28, 31, 38, 0.1);
 }
 
 /* Italic "Layer" wordmark — sage, except inside sage section */
@@ -778,37 +778,30 @@ a {
 }
 
 .stack .flow__step {
-  background: rgba(245, 239, 228, 0.6);
-  border-left-color: var(--ink);
+  background: var(--cream);
   color: var(--ink);
+  border-left-width: 6px;
+  padding: 24px 28px;
 }
 
 .stack .flow__step--1 {
-  background: rgba(245, 239, 228, 0.5);
-  border-left-color: var(--sage-deep);
+  border-left-color: var(--ink);
 }
 .stack .flow__step--2 {
-  background: rgba(245, 239, 228, 0.7);
   border-left-color: var(--sage-deep);
 }
 .stack .flow__step--3 {
-  background: var(--purple);
-  border-left-color: var(--lavender);
-  color: var(--cream);
+  border-left-color: var(--purple);
 }
 .stack .flow__step--3b {
-  background: var(--lavender);
-  border-left-color: var(--purple);
-  color: var(--cream);
+  border-left-color: var(--lavender);
 }
 .stack .flow__step--4 {
-  background: var(--terracotta);
-  border-left-color: var(--terracotta-deep);
-  color: var(--cream);
+  border-left-color: var(--terracotta);
 }
 
 .stack .flow__arrow {
-  color: rgba(28, 31, 38, 0.45);
+  color: rgba(245, 239, 228, 0.7);
 }
 
 /* ================================================================
@@ -983,7 +976,7 @@ a {
 }
 
 .brand--footer .brand__name em {
-  color: var(--sage-pale);
+  color: var(--sage);
 }
 
 .brand--footer .brand__tagline {
