@@ -1108,8 +1108,8 @@ a {
 }
 
 .page-hero__title em {
-  font-style: italic;
-  font-weight: 600;
+  font-style: normal;
+  font-weight: 700;
   color: var(--sage-deep);
 }
 
