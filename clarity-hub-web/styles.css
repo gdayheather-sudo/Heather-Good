@@ -652,9 +652,9 @@ a {
 }
 
 .belief--feature .belief__quote {
-  font-size: clamp(36px, 6.4vw, 84px);
-  line-height: 1.08;
-  max-width: 24ch;
+  font-size: clamp(32px, 5.6vw, 76px);
+  line-height: 1.1;
+  max-width: none;
   font-weight: 700;
   letter-spacing: 0.005em;
   word-spacing: 0.04em;
