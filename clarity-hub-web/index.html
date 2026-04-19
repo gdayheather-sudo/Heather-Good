@@ -12,12 +12,93 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <!-- Reusable SVG defs -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <!-- Overlapping circles motif -->
+        <symbol id="motif-circles" viewBox="0 0 320 320">
+          <circle cx="170" cy="150" r="150" fill="#A4B8AB" />
+          <circle cx="240" cy="120" r="62" fill="#C97C5D" />
+        </symbol>
+        <!-- Sage circle alone (footer / contact corner) -->
+        <symbol id="motif-circle-sage" viewBox="0 0 240 240">
+          <circle cx="80" cy="160" r="160" fill="#A4B8AB" opacity="0.85" />
+        </symbol>
+        <!-- 3x3 dot grid -->
+        <symbol id="motif-dots" viewBox="0 0 130 130">
+          <g fill="#A4B8AB">
+            <circle cx="15" cy="15" r="9" />
+            <circle cx="65" cy="15" r="9" />
+            <circle cx="115" cy="15" r="9" />
+            <circle cx="15" cy="65" r="9" />
+            <circle cx="65" cy="65" r="9" />
+            <circle cx="115" cy="65" r="9" />
+            <circle cx="15" cy="115" r="9" />
+            <circle cx="65" cy="115" r="9" />
+            <circle cx="115" cy="115" r="9" />
+          </g>
+        </symbol>
+        <!-- Wavy line with terracotta dots -->
+        <symbol id="motif-wave" viewBox="0 0 1200 200" preserveAspectRatio="none">
+          <path
+            d="M 0 140 C 120 60, 240 200, 380 140 S 620 60, 760 130 S 1020 210, 1200 110"
+            fill="none"
+            stroke="#A4B8AB"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            opacity="0.85"
+          />
+          <path
+            d="M 0 170 C 160 100, 320 220, 500 160 S 800 100, 1000 170 S 1200 140, 1300 160"
+            fill="none"
+            stroke="#A4B8AB"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            opacity="0.55"
+          />
+          <g fill="#C97C5D">
+            <circle cx="120" cy="118" r="6" />
+            <circle cx="380" cy="140" r="6" />
+            <circle cx="640" cy="120" r="6" />
+            <circle cx="900" cy="170" r="6" />
+            <circle cx="1140" cy="115" r="6" />
+          </g>
+        </symbol>
+        <!-- Wavy line on light bg (cream stroke for purple bg) -->
+        <symbol id="motif-wave-light" viewBox="0 0 1200 200" preserveAspectRatio="none">
+          <path
+            d="M 0 140 C 120 60, 240 200, 380 140 S 620 60, 760 130 S 1020 210, 1200 110"
+            fill="none"
+            stroke="#C8D4C9"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            opacity="0.7"
+          />
+          <path
+            d="M 0 170 C 160 100, 320 220, 500 160 S 800 100, 1000 170 S 1200 140, 1300 160"
+            fill="none"
+            stroke="#C8D4C9"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            opacity="0.45"
+          />
+          <g fill="#C97C5D">
+            <circle cx="120" cy="118" r="6" />
+            <circle cx="380" cy="140" r="6" />
+            <circle cx="640" cy="120" r="6" />
+            <circle cx="900" cy="170" r="6" />
+            <circle cx="1140" cy="115" r="6" />
+          </g>
+        </symbol>
+      </defs>
+    </svg>
+
     <header class="site-header">
       <div class="container site-header__inner">
         <a href="#top" class="brand" aria-label="The Clarity Hub home">
@@ -46,16 +127,40 @@
     </header>
 
     <main id="top">
+      <!-- ================ HERO ================ -->
       <section class="hero">
+        <svg class="hero__shape hero__shape--circles" aria-hidden="true">
+          <use href="#motif-circles" />
+        </svg>
+        <svg class="hero__shape hero__shape--dots" aria-hidden="true">
+          <use href="#motif-dots" />
+        </svg>
+        <svg class="hero__shape hero__shape--wave" aria-hidden="true" preserveAspectRatio="none">
+          <use href="#motif-wave" />
+        </svg>
+
         <div class="container">
-          <p class="eyebrow eyebrow--mobile">Clarity &middot; Systems &middot; Calm Growth</p>
+          <p class="eyebrow">
+            <span class="eyebrow__num">01 / 04</span>
+            <span class="eyebrow__sep">·</span>
+            <span>Clarity &middot; Systems &middot; Calm Growth</span>
+            <span class="eyebrow__rule"></span>
+          </p>
+
           <h1 class="hero__title">
-            Bring structure to the parts of your business that feel too heavy to hold in your head.
+            Bring <em>structure</em> to the parts of your business that feel too heavy to hold in
+            your head.
           </h1>
+          <span class="hero__title-rule" aria-hidden="true"></span>
+
           <p class="hero__lede">
+            Calmer growth, built on better systems.
+          </p>
+          <p class="hero__sub">
             The Clarity Hub helps founders create calmer growth through practical systems,
             AI&#8209;supported tools, and thoughtful organisational support.
           </p>
+
           <div class="hero__cta">
             <a class="btn btn--primary" href="#layer">
               Explore <strong>The Clarity</strong> <em>Layer</em>
@@ -63,9 +168,9 @@
             <a class="btn btn--ghost" href="#contact">Get in Touch</a>
           </div>
         </div>
-        <img class="hero__wave" src="public/wave.svg" alt="" aria-hidden="true" />
       </section>
 
+      <!-- ================ HERO FLOW ================ -->
       <section class="stack stack--inline" aria-label="The Clarity flow">
         <div class="container">
           <ol class="flow">
@@ -92,10 +197,18 @@
         </div>
       </section>
 
+      <!-- ================ FOUNDATION ================ -->
       <section class="foundation" id="about">
         <div class="container">
-          <p class="eyebrow"><span>Brand Foundation</span></p>
-          <h2 class="section-title">What The Clarity Hub is.</h2>
+          <p class="eyebrow">
+            <span class="eyebrow__num">02 / 04</span>
+            <span class="eyebrow__sep">·</span>
+            <span>Brand Foundation</span>
+            <span class="eyebrow__rule"></span>
+          </p>
+          <h2 class="section-title">What The Clarity Hub <em>is</em>.</h2>
+          <span class="section-title__rule" aria-hidden="true"></span>
+
           <div class="prose">
             <p>
               Most founders are capable, driven, and delivering real results &mdash; but they&rsquo;re
@@ -109,14 +222,14 @@
           </div>
 
           <div class="cards">
-            <article class="card">
+            <article class="card card--purple">
               <p class="card__label">Mission</p>
               <p class="card__body">
                 To help women&#8209;led service businesses bring order to complexity with practical
                 systems, clear visibility, and structure that supports calmer growth.
               </p>
             </article>
-            <article class="card">
+            <article class="card card--terracotta">
               <p class="card__label">Brand Essence</p>
               <p class="card__body card__body--lead">
                 Clear&#8209;thinking. Calm. Credible. Practical.
@@ -126,21 +239,41 @@
         </div>
       </section>
 
+      <!-- ================ BELIEF ================ -->
       <section class="belief">
+        <span class="belief__shape belief__shape--rect" aria-hidden="true"></span>
+        <svg class="belief__shape belief__shape--wave" aria-hidden="true" preserveAspectRatio="none">
+          <use href="#motif-wave-light" />
+        </svg>
+
         <div class="container">
-          <p class="eyebrow eyebrow--light">Core Belief</p>
+          <p class="eyebrow eyebrow--light">
+            <span class="eyebrow__num">03 / 04</span>
+            <span class="eyebrow__sep">·</span>
+            <span>Core Belief</span>
+            <span class="eyebrow__rule"></span>
+          </p>
           <blockquote class="belief__quote">
-            &ldquo;Calm isn&rsquo;t something you find. It&rsquo;s something you build.&rdquo;
+            &ldquo;Calm isn&rsquo;t something you find. It&rsquo;s something you <em>build</em>.&rdquo;
           </blockquote>
         </div>
       </section>
 
+      <!-- ================ HOW WE HELP ================ -->
       <section class="help" id="help">
         <div class="container">
-          <p class="eyebrow"><span>How we help</span></p>
-          <h2 class="section-title">How we help.</h2>
+          <p class="eyebrow">
+            <span class="eyebrow__num">04 / 04</span>
+            <span class="eyebrow__sep">·</span>
+            <span>How we help</span>
+            <span class="eyebrow__rule"></span>
+          </p>
+          <h2 class="section-title">How we <em>help</em>.</h2>
+          <span class="section-title__rule" aria-hidden="true"></span>
+
           <div class="services">
             <article class="service">
+              <p class="service__num">01 &mdash; Consulting</p>
               <h3 class="service__title">Systems Consulting</h3>
               <p>
                 One&#8209;to&#8209;one work to map what&rsquo;s in your head, design the systems
@@ -148,6 +281,7 @@
               </p>
             </article>
             <article class="service">
+              <p class="service__num">02 &mdash; Structure</p>
               <h3 class="service__title">Operational Structure</h3>
               <p>
                 Lightweight frameworks for capture, prioritisation, and review &mdash; so decisions
@@ -155,6 +289,7 @@
               </p>
             </article>
             <article class="service">
+              <p class="service__num">03 &mdash; Tools</p>
               <h3 class="service__title">AI&#8209;Supported Tools</h3>
               <p>
                 Practical, founder&#8209;friendly tools that surface what matters and quietly hold
@@ -164,7 +299,7 @@
           </div>
 
           <aside class="callout">
-            <h3 class="callout__title">Practical Over Perfect</h3>
+            <h3 class="callout__title">Practical over perfect.</h3>
             <p>
               No fluff. No hype. Solutions that are simple, usable, and actually implemented &mdash;
               not just beautiful on paper.
@@ -173,10 +308,23 @@
         </div>
       </section>
 
+      <!-- ================ CLARITY STACK (sage) ================ -->
       <section class="stack" id="stack">
+        <span class="stack__shape stack__shape--rect" aria-hidden="true"></span>
+        <svg class="stack__shape stack__shape--wave" aria-hidden="true" preserveAspectRatio="none">
+          <use href="#motif-wave" />
+        </svg>
+
         <div class="container">
-          <p class="eyebrow eyebrow--light"><span>The Clarity Stack</span></p>
-          <h2 class="section-title section-title--light">From Chaos &rarr; Clarity</h2>
+          <p class="eyebrow">
+            <span class="eyebrow__num">01 / 02</span>
+            <span class="eyebrow__sep">·</span>
+            <span>The Clarity Stack</span>
+            <span class="eyebrow__rule"></span>
+          </p>
+          <h2 class="section-title">From Chaos &rarr; <em>Clarity</em></h2>
+          <span class="section-title__rule" aria-hidden="true"></span>
+
           <ol class="flow flow--full">
             <li class="flow__step flow__step--1">
               <span class="flow__label">Chaos</span>
@@ -198,7 +346,7 @@
               <span class="flow__meaning">See what&rsquo;s happening</span>
             </li>
             <li class="flow__arrow" aria-hidden="true">&darr;</li>
-            <li class="flow__step flow__step--4 flow__step--muted">
+            <li class="flow__step flow__step--4">
               <span class="flow__label">Decision</span>
               <span class="flow__meaning">Move with clarity</span>
             </li>
@@ -206,23 +354,45 @@
         </div>
       </section>
 
+      <!-- ================ THE CLARITY LAYER ================ -->
       <section class="layer" id="layer">
+        <span class="layer__shape layer__shape--rect" aria-hidden="true"></span>
+        <svg class="layer__shape layer__shape--wave" aria-hidden="true" preserveAspectRatio="none">
+          <use href="#motif-wave-light" />
+        </svg>
+
         <div class="container layer__inner">
-          <p class="eyebrow eyebrow--light eyebrow--center">Tool</p>
+          <p class="eyebrow eyebrow--light eyebrow--center">
+            <span class="eyebrow__num">02 / 02</span>
+            <span class="eyebrow__sep">·</span>
+            <span>The Tool</span>
+          </p>
+          <p class="layer__num">1</p>
           <h2 class="layer__title">The Clarity <em>Layer</em></h2>
+          <p class="layer__caption">Get it out. Make it usable.</p>
           <p class="layer__body">
             A practical tool designed to help you get thoughts out of your head, organise what
             matters, and move forward with clarity.
           </p>
-          <a class="btn btn--ghost btn--ghost-light" href="#contact">
+          <a class="btn btn--accent" href="#contact">
             Explore <strong>The Clarity</strong> <em>Layer</em>
           </a>
         </div>
       </section>
 
+      <!-- ================ CONTACT ================ -->
       <section class="contact" id="contact">
+        <svg class="contact__shape--circles" aria-hidden="true">
+          <use href="#motif-circle-sage" />
+        </svg>
+
         <div class="container contact__inner">
-          <h2 class="section-title contact__title">How can we help?</h2>
+          <p class="eyebrow eyebrow--center">
+            <span class="eyebrow__num">&mdash;</span>
+            <span class="eyebrow__sep">·</span>
+            <span>Get in Touch</span>
+          </p>
+          <h2 class="section-title contact__title">How can we <em>help</em>?</h2>
           <p class="contact__body">
             If you&rsquo;re looking for clearer systems, practical support, or a better way to
             organise what&rsquo;s in your head, get in touch.
@@ -260,6 +430,10 @@
     </main>
 
     <footer class="site-footer">
+      <svg class="site-footer__shape--wave" aria-hidden="true" preserveAspectRatio="none">
+        <use href="#motif-wave-light" />
+      </svg>
+
       <div class="container site-footer__inner">
         <p class="brand brand--footer">
           <span class="brand__name">The Clarity <em>Hub</em></span>
