@@ -18,91 +18,9 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- Reusable SVG defs -->
-    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-      <defs>
-        <!-- Overlapping circles motif -->
-        <symbol id="motif-circles" viewBox="0 0 320 320">
-          <circle cx="170" cy="150" r="150" fill="#A4B8AB" />
-          <circle cx="240" cy="120" r="62" fill="#C97C5D" />
-        </symbol>
-        <!-- Sage circle alone (footer / contact corner) -->
-        <symbol id="motif-circle-sage" viewBox="0 0 240 240">
-          <circle cx="80" cy="160" r="160" fill="#A4B8AB" opacity="0.85" />
-        </symbol>
-        <!-- 3x3 dot grid -->
-        <symbol id="motif-dots" viewBox="0 0 130 130">
-          <g fill="#A4B8AB">
-            <circle cx="15" cy="15" r="9" />
-            <circle cx="65" cy="15" r="9" />
-            <circle cx="115" cy="15" r="9" />
-            <circle cx="15" cy="65" r="9" />
-            <circle cx="65" cy="65" r="9" />
-            <circle cx="115" cy="65" r="9" />
-            <circle cx="15" cy="115" r="9" />
-            <circle cx="65" cy="115" r="9" />
-            <circle cx="115" cy="115" r="9" />
-          </g>
-        </symbol>
-        <!-- Wavy line with terracotta dots -->
-        <symbol id="motif-wave" viewBox="0 0 1200 200" preserveAspectRatio="none">
-          <path
-            d="M 0 140 C 120 60, 240 200, 380 140 S 620 60, 760 130 S 1020 210, 1200 110"
-            fill="none"
-            stroke="#A4B8AB"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            opacity="0.85"
-          />
-          <path
-            d="M 0 170 C 160 100, 320 220, 500 160 S 800 100, 1000 170 S 1200 140, 1300 160"
-            fill="none"
-            stroke="#A4B8AB"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            opacity="0.55"
-          />
-          <g fill="#C97C5D">
-            <circle cx="120" cy="118" r="6" />
-            <circle cx="380" cy="140" r="6" />
-            <circle cx="640" cy="120" r="6" />
-            <circle cx="900" cy="170" r="6" />
-            <circle cx="1140" cy="115" r="6" />
-          </g>
-        </symbol>
-        <!-- Wavy line on light bg (cream stroke for purple bg) -->
-        <symbol id="motif-wave-light" viewBox="0 0 1200 200" preserveAspectRatio="none">
-          <path
-            d="M 0 140 C 120 60, 240 200, 380 140 S 620 60, 760 130 S 1020 210, 1200 110"
-            fill="none"
-            stroke="#C8D4C9"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            opacity="0.7"
-          />
-          <path
-            d="M 0 170 C 160 100, 320 220, 500 160 S 800 100, 1000 170 S 1200 140, 1300 160"
-            fill="none"
-            stroke="#C8D4C9"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            opacity="0.45"
-          />
-          <g fill="#C97C5D">
-            <circle cx="120" cy="118" r="6" />
-            <circle cx="380" cy="140" r="6" />
-            <circle cx="640" cy="120" r="6" />
-            <circle cx="900" cy="170" r="6" />
-            <circle cx="1140" cy="115" r="6" />
-          </g>
-        </symbol>
-      </defs>
-    </svg>
-
     <header class="site-header">
       <div class="container site-header__inner">
         <a href="#top" class="brand" aria-label="The Clarity Hub home">
-          <img class="brand__logo" src="public/The%20Clarity%20Hub%20Logo.png" alt="" />
           <span class="brand__text">
             <span class="brand__name">The Clarity <em>Hub</em></span>
             <span class="brand__tagline">Clarity &middot; Systems &middot; Calm Growth</span>
@@ -129,16 +47,6 @@
     <main id="top">
       <!-- ================ HERO ================ -->
       <section class="hero">
-        <svg class="hero__shape hero__shape--circles" aria-hidden="true">
-          <use href="#motif-circles" />
-        </svg>
-        <svg class="hero__shape hero__shape--dots" aria-hidden="true">
-          <use href="#motif-dots" />
-        </svg>
-        <svg class="hero__shape hero__shape--wave" aria-hidden="true" preserveAspectRatio="none">
-          <use href="#motif-wave" />
-        </svg>
-
         <div class="container">
           <p class="eyebrow">
             <span class="eyebrow__num">01 / 04</span>
@@ -241,11 +149,6 @@
 
       <!-- ================ BELIEF ================ -->
       <section class="belief">
-        <span class="belief__shape belief__shape--rect" aria-hidden="true"></span>
-        <svg class="belief__shape belief__shape--wave" aria-hidden="true" preserveAspectRatio="none">
-          <use href="#motif-wave-light" />
-        </svg>
-
         <div class="container">
           <p class="eyebrow eyebrow--light">
             <span class="eyebrow__num">03 / 04</span>
@@ -308,13 +211,8 @@
         </div>
       </section>
 
-      <!-- ================ CLARITY STACK (sage) ================ -->
+      <!-- ================ CLARITY STACK ================ -->
       <section class="stack" id="stack">
-        <span class="stack__shape stack__shape--rect" aria-hidden="true"></span>
-        <svg class="stack__shape stack__shape--wave" aria-hidden="true" preserveAspectRatio="none">
-          <use href="#motif-wave" />
-        </svg>
-
         <div class="container">
           <p class="eyebrow">
             <span class="eyebrow__num">01 / 02</span>
@@ -356,18 +254,12 @@
 
       <!-- ================ THE CLARITY LAYER ================ -->
       <section class="layer" id="layer">
-        <span class="layer__shape layer__shape--rect" aria-hidden="true"></span>
-        <svg class="layer__shape layer__shape--wave" aria-hidden="true" preserveAspectRatio="none">
-          <use href="#motif-wave-light" />
-        </svg>
-
         <div class="container layer__inner">
           <p class="eyebrow eyebrow--light eyebrow--center">
             <span class="eyebrow__num">02 / 02</span>
             <span class="eyebrow__sep">·</span>
             <span>The Tool</span>
           </p>
-          <p class="layer__num">1</p>
           <h2 class="layer__title">The Clarity <em>Layer</em></h2>
           <p class="layer__caption">Get it out. Make it usable.</p>
           <p class="layer__body">
@@ -382,10 +274,6 @@
 
       <!-- ================ CONTACT ================ -->
       <section class="contact" id="contact">
-        <svg class="contact__shape--circles" aria-hidden="true">
-          <use href="#motif-circle-sage" />
-        </svg>
-
         <div class="container contact__inner">
           <p class="eyebrow eyebrow--center">
             <span class="eyebrow__num">&mdash;</span>
@@ -430,10 +318,6 @@
     </main>
 
     <footer class="site-footer">
-      <svg class="site-footer__shape--wave" aria-hidden="true" preserveAspectRatio="none">
-        <use href="#motif-wave-light" />
-      </svg>
-
       <div class="container site-footer__inner">
         <p class="brand brand--footer">
           <span class="brand__name">The Clarity <em>Hub</em></span>
