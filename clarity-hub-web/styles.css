@@ -565,6 +565,12 @@ a {
   color: var(--ink);
 }
 
+/* Ghost-on-purple button: use cream for contrast */
+.btn--ghost-light .kw-layer,
+.layer__title .kw-layer {
+  color: var(--cream);
+}
+
 .prose p {
   font-size: clamp(17px, 1.5vw, 20px);
   line-height: 1.7;
@@ -636,6 +642,24 @@ a {
   background: var(--purple);
   color: var(--cream);
   padding: 96px 0;
+}
+
+.belief--feature {
+  padding: clamp(80px, 14vw, 180px) 0;
+}
+
+.belief--feature .belief__quote {
+  font-size: clamp(44px, 8vw, 108px);
+  line-height: 1.02;
+  max-width: 22ch;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.belief--feature .belief__quote em {
+  font-style: italic;
+  font-weight: 600;
+  color: var(--sage);
 }
 
 .belief__quote {
