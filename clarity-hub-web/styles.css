@@ -840,7 +840,7 @@ a {
   border-left-color: var(--ink);
 }
 .stack .flow__step--2 {
-  border-left-color: var(--sage-deep);
+  border-left-color: var(--terracotta-soft);
 }
 .stack .flow__step--3 {
   border-left-color: var(--purple);
