@@ -1025,7 +1025,13 @@ a {
 }
 
 .brand--footer .brand__name em {
-  color: var(--sage);
+  color: var(--sage-deep);
+}
+
+.site-footer__belief em {
+  font-style: italic;
+  color: var(--sage-deep);
+  font-weight: 600;
 }
 
 .brand--footer .brand__tagline {
