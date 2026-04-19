@@ -148,10 +148,14 @@ a {
 
 /* Nav */
 .nav {
-  display: none;
+  display: flex;
   gap: 28px;
   font-size: 14px;
   letter-spacing: 0.04em;
+}
+
+.nav[hidden] {
+  display: none;
 }
 
 .nav a {
@@ -195,6 +199,7 @@ a {
   .nav,
   .nav[hidden] {
     display: flex !important;
+    position: static;
   }
 }
 
