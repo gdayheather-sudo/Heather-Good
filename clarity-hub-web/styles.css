@@ -567,7 +567,7 @@ a {
   border-color: rgba(28, 31, 38, 0.1);
 }
 
-/* Italic "Layer" wordmark — sage-deep, except on sage section */
+/* Product wordmark — "The Clarity Dashboard" */
 .kw-layer,
 .kw-dashboard {
   color: var(--sage-deep);
@@ -577,6 +577,14 @@ a {
 .stack .kw-layer,
 .stack .kw-dashboard {
   color: var(--ink);
+}
+
+/* Upright "The Clarity" prefix, used alongside .kw-dashboard in body text
+   so the wordmark reads in a single serif family (not mixed serif+sans). */
+.kw-clarity {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-style: normal;
 }
 
 .prose p {
