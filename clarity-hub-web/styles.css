@@ -570,8 +570,10 @@ a {
 /* Product wordmark — "The Clarity Dashboard" */
 .kw-layer,
 .kw-dashboard {
-  color: var(--sage-deep);
+  font-family: var(--serif);
+  font-weight: 600;
   font-style: italic;
+  color: var(--sage-deep);
 }
 
 .stack .kw-layer,
