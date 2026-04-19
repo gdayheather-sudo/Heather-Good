@@ -65,6 +65,7 @@ body {
   font-size: 17px;
   line-height: 1.65;
   font-weight: 400;
+  font-synthesis: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -279,7 +280,7 @@ a {
   font-family: var(--serif);
   font-size: clamp(36px, 5.4vw, 64px);
   line-height: 1.04;
-  font-weight: 700;
+  font-weight: 400;
   letter-spacing: -0.018em;
   margin: 0 0 28px;
   color: var(--ink);
@@ -321,7 +322,7 @@ a {
 
 .hero__title {
   font-family: var(--serif);
-  font-weight: 700;
+  font-weight: 400;
   font-size: clamp(40px, 6.6vw, 84px);
   line-height: 1.02;
   letter-spacing: -0.02em;
@@ -428,7 +429,7 @@ a {
 
 .btn strong {
   font-style: normal;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .btn--primary {
@@ -670,7 +671,7 @@ a {
   font-size: clamp(32px, 5.6vw, 76px);
   line-height: 1.1;
   max-width: none;
-  font-weight: 700;
+  font-weight: 400;
   letter-spacing: 0.005em;
   word-spacing: 0.04em;
 }
@@ -892,7 +893,7 @@ a {
 
 .layer__title {
   font-family: var(--serif);
-  font-weight: 700;
+  font-weight: 400;
   font-size: clamp(48px, 7vw, 88px);
   margin: 12px 0 28px;
   letter-spacing: -0.012em;
@@ -1118,7 +1119,7 @@ a {
 
 .page-hero__title {
   font-family: var(--serif);
-  font-weight: 700;
+  font-weight: 400;
   font-size: clamp(44px, 7vw, 92px);
   line-height: 1.04;
   letter-spacing: -0.018em;
@@ -1128,7 +1129,7 @@ a {
 
 .page-hero__title em {
   font-style: normal;
-  font-weight: 700;
+  font-weight: 400;
   color: var(--sage-deep);
 }
 
@@ -1187,7 +1188,7 @@ a {
 
 .feature-card__title {
   font-family: var(--serif);
-  font-weight: 700;
+  font-weight: 400;
   font-size: clamp(28px, 3.5vw, 40px);
   margin: 0 0 14px;
   color: var(--ink);
@@ -1223,7 +1224,7 @@ a {
 
 .waitlist__title {
   font-family: var(--serif);
-  font-weight: 700;
+  font-weight: 400;
   font-size: clamp(34px, 4.5vw, 56px);
   line-height: 1.06;
   margin: 0 0 18px;
@@ -1300,7 +1301,7 @@ a {
 
 .masthead__name {
   font-family: var(--serif);
-  font-weight: 700;
+  font-weight: 400;
   font-size: clamp(48px, 8vw, 104px);
   line-height: 1;
   letter-spacing: -0.018em;
@@ -1336,7 +1337,7 @@ a {
    ================================================================ */
 .prose-doc h2 {
   font-family: var(--serif);
-  font-weight: 700;
+  font-weight: 400;
   font-size: clamp(24px, 2.4vw, 30px);
   letter-spacing: -0.01em;
   margin: 40px 0 12px;
