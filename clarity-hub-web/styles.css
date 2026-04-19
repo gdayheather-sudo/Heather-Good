@@ -645,21 +645,23 @@ a {
 }
 
 .belief--feature {
-  padding: clamp(80px, 14vw, 180px) 0;
+  padding: clamp(60px, 10vw, 128px) 0;
 }
 
 .belief--feature .belief__quote {
-  font-size: clamp(44px, 8vw, 108px);
-  line-height: 1.02;
-  max-width: 22ch;
+  font-size: clamp(36px, 6.4vw, 84px);
+  line-height: 1.08;
+  max-width: 24ch;
   font-weight: 700;
-  letter-spacing: -0.015em;
+  letter-spacing: 0.005em;
+  word-spacing: 0.04em;
 }
 
 .belief--feature .belief__quote em {
   font-style: italic;
   font-weight: 600;
   color: var(--sage);
+  letter-spacing: 0.01em;
 }
 
 .belief__quote {
@@ -712,12 +714,13 @@ a {
 }
 
 .service__num {
-  font-size: 11px;
-  letter-spacing: 0.22em;
+  font-family: var(--sans);
+  font-size: 13px;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--muted);
-  font-weight: 500;
-  margin: 0 0 10px;
+  font-weight: 600;
+  margin: 0 0 16px;
 }
 
 .service:nth-child(1) .service__num {
@@ -775,7 +778,7 @@ a {
    Stack (dark / sage section — inspired by carousel slide 5)
    ================================================================ */
 .stack {
-  background: var(--sage);
+  background: var(--sage-deep);
   color: var(--ink);
   padding: 96px 0 104px;
 }
