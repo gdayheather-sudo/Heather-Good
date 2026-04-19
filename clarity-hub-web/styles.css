@@ -1419,3 +1419,43 @@ a {
 .waitlist .contact-form__consent {
   color: rgba(245, 239, 228, 0.7);
 }
+
+/* ================================================================
+   Socials (footer)
+   ================================================================ */
+.socials {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.socials a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  color: rgba(245, 239, 228, 0.75);
+  border: 1px solid rgba(245, 239, 228, 0.18);
+  transition: color 0.18s, border-color 0.18s, background-color 0.18s;
+}
+
+.socials a:hover {
+  color: var(--cream);
+  border-color: var(--sage-deep);
+  background: rgba(245, 239, 228, 0.05);
+}
+
+.socials svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* About page connect CTA */
+.about-connect {
+  margin-top: 40px;
+}
