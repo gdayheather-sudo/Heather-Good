@@ -1330,3 +1330,92 @@ a {
   font-weight: 500;
   margin: 0;
 }
+
+/* ================================================================
+   Prose document (Privacy Policy, Terms, etc.)
+   ================================================================ */
+.prose-doc h2 {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: clamp(24px, 2.4vw, 30px);
+  letter-spacing: -0.01em;
+  margin: 40px 0 12px;
+  color: var(--ink);
+}
+
+.prose-doc h2:first-child {
+  margin-top: 0;
+}
+
+.prose-doc p,
+.prose-doc li {
+  font-size: 16.5px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+.prose-doc p {
+  margin: 0 0 16px;
+}
+
+.prose-doc ul {
+  margin: 0 0 18px;
+  padding-left: 22px;
+}
+
+.prose-doc li {
+  margin-bottom: 6px;
+}
+
+.prose-doc a {
+  color: var(--purple);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose-doc a:hover {
+  color: var(--purple-deep);
+}
+
+.prose-doc__meta {
+  margin-top: 40px;
+  font-size: 14px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Footer legal link */
+.site-footer__legal {
+  margin: 18px 0 0;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.site-footer__legal a {
+  color: rgba(245, 239, 228, 0.7);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(245, 239, 228, 0.25);
+  padding-bottom: 2px;
+}
+
+.site-footer__legal a:hover {
+  color: var(--cream);
+  border-bottom-color: var(--sage);
+}
+
+.contact-form__consent {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.contact-form__consent a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.waitlist .contact-form__consent {
+  color: rgba(245, 239, 228, 0.7);
+}
