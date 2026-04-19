@@ -537,9 +537,23 @@ a {
    Foundation
    ================================================================ */
 .foundation {
-  padding: 80px 0 88px;
-  border-top: 1px solid var(--rule);
+  padding: 96px 0 104px;
+  background: var(--sage-mist);
+  color: var(--ink);
   position: relative;
+}
+
+.foundation .eyebrow {
+  color: var(--sage-deep);
+}
+
+.foundation .eyebrow__rule {
+  background: rgba(141, 163, 149, 0.45);
+}
+
+.foundation .card {
+  background: var(--cream);
+  border-color: rgba(141, 163, 149, 0.3);
 }
 
 .prose p {
