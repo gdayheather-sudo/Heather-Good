@@ -559,11 +559,14 @@ a {
 }
 
 /* Italic "Layer" wordmark — sage-deep, except on sage section */
-.kw-layer {
+.kw-layer,
+.kw-dashboard {
   color: var(--sage-deep);
+  font-style: italic;
 }
 
-.stack .kw-layer {
+.stack .kw-layer,
+.stack .kw-dashboard {
   color: var(--ink);
 }
 
