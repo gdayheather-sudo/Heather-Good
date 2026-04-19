@@ -538,7 +538,7 @@ a {
    ================================================================ */
 .foundation {
   padding: 96px 0 104px;
-  background: var(--sage-mist);
+  background: var(--sage-pale);
   color: var(--ink);
   position: relative;
 }
@@ -548,12 +548,21 @@ a {
 }
 
 .foundation .eyebrow__rule {
-  background: rgba(141, 163, 149, 0.45);
+  background: rgba(141, 163, 149, 0.5);
 }
 
 .foundation .card {
   background: var(--cream);
-  border-color: rgba(141, 163, 149, 0.3);
+  border-color: rgba(141, 163, 149, 0.35);
+}
+
+/* Italic "Layer" wordmark — sage, except inside sage section */
+.kw-layer {
+  color: var(--sage-deep);
+}
+
+.stack .kw-layer {
+  color: var(--ink);
 }
 
 .prose p {
