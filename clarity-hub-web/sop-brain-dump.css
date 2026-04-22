@@ -1,0 +1,669 @@
+/* ================================================================
+   SOP Brain Dump — page-specific styles
+   Inherits brand tokens (--warm-white, --navy, --sage, --clay, …)
+   and typography (--serif, --sans) from styles.css.
+   ================================================================ */
+
+.sop {
+  padding-bottom: 96px;
+}
+
+/* -------- Hero -------- */
+.sop__hero {
+  padding: 56px 0 24px;
+  background: var(--bg);
+}
+
+.sop__eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--sage-deep);
+  font-weight: 500;
+  margin: 18px 0 14px;
+}
+
+.sop__title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(40px, 6.2vw, 72px);
+  line-height: 1.04;
+  letter-spacing: -0.018em;
+  margin: 0 0 14px;
+  color: var(--ink);
+}
+
+.sop__title em {
+  font-style: italic;
+  color: var(--navy);
+}
+
+.sop__lede {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(18px, 1.8vw, 22px);
+  line-height: 1.4;
+  color: var(--clay);
+  margin: 0 0 8px;
+  max-width: 36ch;
+}
+
+/* -------- Stage container -------- */
+.sop__stage {
+  padding: 24px 0 0;
+}
+
+.sop__container {
+  max-width: 780px;
+}
+
+.sop-stage {
+  animation: sop-fade-in 0.24s ease-out;
+}
+
+@keyframes sop-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* -------- 7 prompts disclosure -------- */
+.sop-prompts {
+  background: #FFFFFF;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.sop-prompts > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--navy);
+  transition: background-color 0.18s;
+}
+
+.sop-prompts > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sop-prompts > summary:hover {
+  background: #FCFAF5;
+}
+
+.sop-prompts__toggle {
+  font-size: 12px;
+  color: var(--sage-deep);
+  letter-spacing: 0.04em;
+}
+
+.sop-prompts[open] .sop-prompts__toggle::before {
+  content: 'Hide';
+}
+
+.sop-prompts:not([open]) .sop-prompts__toggle::before {
+  content: 'Show';
+}
+
+.sop-prompts__toggle {
+  visibility: hidden;
+  position: relative;
+}
+
+.sop-prompts__toggle::before {
+  visibility: visible;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.sop-prompts__list {
+  list-style: none;
+  padding: 4px 20px 18px;
+  margin: 0;
+  border-top: 1px solid #F0EBE2;
+  display: grid;
+  gap: 12px;
+}
+
+.sop-prompts__list li {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 6px;
+  counter-increment: sop-prompt;
+}
+
+.sop-prompts__list {
+  counter-reset: sop-prompt;
+}
+
+.sop-prompts__list li::before {
+  content: counter(sop-prompt) ".";
+  color: var(--clay);
+  font-weight: 600;
+  font-size: 13px;
+  padding-top: 2px;
+}
+
+.sop-prompts__q {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  display: block;
+}
+
+.sop-prompts__hint {
+  display: block;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+/* -------- Input textarea + mic -------- */
+.sop-input {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.sop-input__textarea {
+  width: 100%;
+  min-height: 240px;
+  padding: 20px 72px 20px 20px;
+  background: #FFFFFF;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  resize: vertical;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.sop-input__textarea::placeholder {
+  color: #A8A8A8;
+}
+
+.sop-input__textarea:focus {
+  outline: none;
+  border-color: var(--sage);
+  box-shadow: 0 0 0 3px rgba(143, 167, 154, 0.25);
+}
+
+.sop-mic {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  color: var(--navy);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.18s, color 0.18s, border-color 0.18s, transform 0.18s;
+}
+
+.sop-mic:hover {
+  background: var(--sage);
+  color: #FFFFFF;
+  border-color: var(--sage);
+}
+
+.sop-mic[aria-pressed="true"] {
+  background: var(--clay);
+  color: #FFFFFF;
+  border-color: var(--clay);
+  animation: sop-pulse 1.6s ease-in-out infinite;
+}
+
+.sop-mic__icon {
+  width: 20px;
+  height: 20px;
+}
+
+@keyframes sop-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 126, 99, 0.45); }
+  50%      { box-shadow: 0 0 0 10px rgba(201, 126, 99, 0); }
+}
+
+.sop-mic__status {
+  position: absolute;
+  bottom: 14px;
+  right: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--clay);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.sop-mic__status:empty {
+  display: none;
+}
+
+.sop-mic__status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--clay);
+  animation: sop-blink 1.2s ease-in-out infinite;
+}
+
+@keyframes sop-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+/* -------- Error banner -------- */
+.sop-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #FAEFE9;
+  border: 1px solid #E8C9B8;
+  border-radius: var(--radius);
+  color: var(--clay-deep);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.sop-error::before {
+  content: '!';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--clay);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* -------- Generate row -------- */
+.sop-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: stretch;
+}
+
+@media (min-width: 600px) {
+  .sop-actions {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.sop-wordcount {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.btn__icon {
+  width: 15px;
+  height: 15px;
+  margin-right: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* -------- Processing -------- */
+.sop-processing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.sop-processing__spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid rgba(63, 83, 102, 0.15);
+  border-top-color: var(--navy);
+  animation: sop-spin 0.9s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes sop-spin {
+  to { transform: rotate(360deg); }
+}
+
+.sop-processing__title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 22px;
+  color: var(--navy);
+  margin: 0 0 6px;
+}
+
+.sop-processing__sub {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* -------- Result: top controls -------- */
+.sop-result__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 700px) {
+  .sop-result__controls {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.sop-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  cursor: pointer;
+  padding: 6px 0;
+  transition: color 0.18s;
+}
+
+.sop-reset:hover {
+  color: var(--navy);
+}
+
+.sop-reset svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sop-result__exports {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sop-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 500;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.18s, border-color 0.18s, color 0.18s;
+}
+
+.sop-export svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sop-export--ghost {
+  background: #FFFFFF;
+  color: var(--navy);
+  border-color: var(--rule);
+}
+.sop-export--ghost:hover {
+  border-color: var(--sage);
+}
+
+.sop-export--outline {
+  background: #FFFFFF;
+  color: var(--navy);
+  border-color: var(--navy);
+}
+.sop-export--outline:hover {
+  background: rgba(63, 83, 102, 0.06);
+}
+
+.sop-export--primary {
+  background: var(--clay);
+  color: #FFFFFF;
+  border-color: var(--clay);
+}
+.sop-export--primary:hover {
+  background: var(--clay-deep);
+  border-color: var(--clay-deep);
+}
+
+/* -------- Result: SOP doc card -------- */
+.sop-doc {
+  background: #FFFFFF;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-card);
+}
+
+@media (min-width: 720px) {
+  .sop-doc {
+    padding: 40px 48px;
+  }
+}
+
+.sop-doc__eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--sage-deep);
+  font-weight: 500;
+  margin: 0 0 6px;
+}
+
+.sop-doc__title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(26px, 3.4vw, 36px);
+  line-height: 1.1;
+  letter-spacing: -0.012em;
+  color: var(--navy);
+  margin: 0 0 24px;
+}
+
+.sop-doc__meta {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px 28px;
+  font-size: 14.5px;
+  margin-bottom: 28px;
+}
+
+@media (min-width: 640px) {
+  .sop-doc__meta {
+    grid-template-columns: 1fr 1fr;
+  }
+  .sop-doc__meta-row--full {
+    grid-column: 1 / -1;
+  }
+}
+
+.sop-doc__meta-label {
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.sop-doc__section-title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 19px;
+  color: var(--navy);
+  border-bottom: 1px solid var(--sage);
+  padding-bottom: 4px;
+  margin: 4px 0 14px;
+}
+
+.sop-doc__steps {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  counter-reset: sop-step;
+}
+
+.sop-doc__steps li {
+  counter-increment: sop-step;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.sop-doc__steps li::before {
+  content: counter(sop-step) ".";
+  color: var(--clay);
+  font-weight: 600;
+  font-size: 14px;
+  padding-top: 2px;
+}
+
+.sop-doc__step-action {
+  color: var(--ink);
+  font-size: 15px;
+  display: block;
+}
+
+.sop-doc__step-meta {
+  display: block;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.sop-doc__cols {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 700px) {
+  .sop-doc__cols {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+}
+
+.sop-doc__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 14.5px;
+}
+
+.sop-doc__list li {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 6px;
+}
+
+.sop-doc__list li::before {
+  content: '\2022';
+  color: var(--sage);
+}
+
+.sop-doc__list--warn li::before {
+  color: var(--clay);
+}
+
+.sop-doc__assumptions {
+  background: #FCFAF5;
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--clay);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-top: 20px;
+}
+
+.sop-doc__assumptions-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--clay-deep);
+  margin: 0 0 8px;
+  letter-spacing: 0.02em;
+}
+
+.sop-doc__assumptions-title::before {
+  content: '! ';
+}
+
+/* -------- Footnote -------- */
+.sop-footnote {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+  margin: 20px 0 0;
+}
+
+.sop-footnote__link {
+  background: none;
+  border: none;
+  color: var(--navy);
+  font: inherit;
+  font-style: italic;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* -------- Toast -------- */
+.sop-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 32px);
+  padding: 12px 20px;
+  background: var(--navy);
+  color: #FFFFFF;
+  font-size: 14px;
+  border-radius: var(--radius);
+  box-shadow: 0 12px 32px -12px rgba(46, 46, 46, 0.4);
+  z-index: 50;
+  animation: sop-toast-in 0.24s ease-out;
+}
+
+@keyframes sop-toast-in {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}

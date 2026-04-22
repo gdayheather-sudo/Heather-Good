@@ -1211,6 +1211,37 @@ a {
   font-weight: 400;
 }
 
+/* Linked variant — used for live tools on the Tools page */
+a.feature-card--link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-left-color: var(--clay);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-left-color 0.18s ease;
+}
+
+a.feature-card--link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 1px 0 rgba(46, 46, 46, 0.04), 0 22px 50px -28px rgba(46, 46, 46, 0.25);
+}
+
+.feature-card--link .feature-card__label {
+  color: var(--clay);
+}
+
+.feature-card--link .feature-card__title em {
+  color: var(--navy);
+}
+
+.feature-card__more {
+  display: inline-block;
+  margin-top: 18px;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--clay);
+}
+
 .waitlist {
   background: var(--navy);
   color: var(--cream);

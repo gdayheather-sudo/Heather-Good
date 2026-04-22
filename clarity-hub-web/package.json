@@ -1,0 +1,10 @@
+{
+  "name": "clarity-hub-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Clarity Hub website — static pages + Netlify serverless functions for the SOP Brain Dump tool.",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.40.1",
+    "openai": "^4.73.0"
+  }
+}

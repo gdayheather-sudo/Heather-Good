@@ -1,0 +1,15 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Pretty URL for the SOP tool
+[[redirects]]
+  from = "/sop-brain-dump"
+  to = "/sop-brain-dump.html"
+  status = 200
