@@ -1,0 +1,24 @@
+# Netlify config for clarityhub.com.au.
+# Lives at the repo root so Netlify always reads it. The site itself is in the
+# clarity-hub-web/ subdirectory; `base` makes Netlify treat that as the project
+# root for publishing and function discovery.
+
+[build]
+  base = "clarity-hub-web"
+  publish = "."
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild"
+  # Both SDKs ship pre-built bundles and have node-only deps esbuild can't
+  # reach into. Mark them external so they load from node_modules at runtime.
+  external_node_modules = ["@anthropic-ai/sdk", "openai"]
+
+# Pretty URL for the SOP Brain Dump tool.
+[[redirects]]
+  from = "/sop-brain-dump"
+  to = "/sop-brain-dump.html"
+  status = 200
