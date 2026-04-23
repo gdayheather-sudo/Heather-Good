@@ -7,6 +7,10 @@
 
 [functions]
   node_bundler = "esbuild"
+  # Both SDKs ship pre-built CJS/ESM bundles and have a few node-specific
+  # deps esbuild can't reach into; mark them external so they're loaded from
+  # node_modules at runtime instead of being inlined.
+  external_node_modules = ["@anthropic-ai/sdk", "openai"]
 
 # Pretty URL for the SOP tool
 [[redirects]]
