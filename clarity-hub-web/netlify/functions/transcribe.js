@@ -6,7 +6,7 @@
 // error. The client now POSTs the raw webm blob with Content-Type: audio/webm
 // and we wrap it with OpenAI's toFile helper for the SDK.
 
-import OpenAI from 'openai';
+import OpenAI, { toFile } from 'openai';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -81,8 +81,13 @@ export default async (req) => {
   const filename = 'recording.' + ext;
 
   try {
-    // Node 20+ exposes File as a global; no need for openai/uploads helper.
-    const audioFile = new File([audioBuffer], filename, { type: mime });
+    // Node 20's global File isn't detected as an upload by the SDK — OpenAI
+    // sees it as a generic object and falls back to JSON serialisation, which
+    // Whisper rejects. The SDK's toFile helper wraps a Buffer in a shape the
+    // SDK recognises and sends as multipart/form-data.
+    const audioFile = await toFile(Buffer.from(audioBuffer), filename, {
+      type: mime,
+    });
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
       model: MODEL,
