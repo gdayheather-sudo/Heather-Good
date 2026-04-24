@@ -1,24 +1,20 @@
 // Netlify Function — proxy to OpenAI's Whisper transcription API.
 // Keeps OPENAI_API_KEY server-side and rate-limits per client IP.
 //
-// Body handling note: earlier this parsed req.formData(), but Netlify's v2
-// function runtime was rejecting the multipart body with a Content-Type
-// error. The client now POSTs the raw webm blob with Content-Type: audio/webm
-// and we wrap it with OpenAI's toFile helper for the SDK.
+// We intentionally bypass the OpenAI Node SDK for this call. Several SDK
+// input types (global File, toFile-wrapped Buffer, fs.createReadStream) all
+// produced "Invalid Content-Type header value" errors from the Whisper API
+// when running on Netlify's v2 function runtime — the SDK wasn't serialising
+// the request as multipart/form-data. Building the multipart body by hand
+// and POSTing with plain fetch takes the SDK out of the equation.
 
-import OpenAI from 'openai';
-import fs from 'node:fs';
-import path from 'node:path';
-import { tmpdir } from 'node:os';
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
+const OPENAI_ENDPOINT = 'https://api.openai.com/v1/audio/transcriptions';
 const MODEL = 'whisper-1';
-const MAX_BYTES = 25 * 1024 * 1024; // 25 MB — OpenAI's Whisper upload cap.
+const MAX_BYTES = 25 * 1024 * 1024; // 25 MB — Whisper's upload cap.
 
-// Rate limiting — same shape as generate-sop, slightly higher limit because one
-// generation often involves two or three transcription round-trips (multiple
-// recording segments).
+// Rate limiting — per-instance in-memory counter keyed by client IP. Slightly
+// higher limit than generate-sop because one generation often involves a
+// couple of recording segments.
 const LIMIT = 20;
 const WINDOW_MS = 60 * 60 * 1000;
 const hits = new Map();
@@ -42,6 +38,36 @@ function jsonResponse(status, body) {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+// Build a multipart/form-data body with two fields: the model name and the
+// audio file. Returns { body, contentType } ready to hand to fetch().
+function buildMultipart(audioBuffer, filename, fileMime) {
+  const boundary =
+    '----clarity-hub-' +
+    Date.now().toString(36) +
+    Math.random().toString(36).slice(2);
+
+  const CRLF = '\r\n';
+  const enc = (s) => Buffer.from(s, 'utf-8');
+
+  const parts = [
+    enc(`--${boundary}${CRLF}`),
+    enc(`Content-Disposition: form-data; name="model"${CRLF}${CRLF}`),
+    enc(`${MODEL}${CRLF}`),
+    enc(`--${boundary}${CRLF}`),
+    enc(
+      `Content-Disposition: form-data; name="file"; filename="${filename}"${CRLF}`
+    ),
+    enc(`Content-Type: ${fileMime}${CRLF}${CRLF}`),
+    Buffer.from(audioBuffer),
+    enc(`${CRLF}--${boundary}--${CRLF}`),
+  ];
+
+  return {
+    body: Buffer.concat(parts),
+    contentType: `multipart/form-data; boundary=${boundary}`,
+  };
 }
 
 export default async (req) => {
@@ -76,43 +102,46 @@ export default async (req) => {
     return jsonResponse(400, { error: 'Audio too large (max 25 MB)' });
   }
 
-  // Derive a filename + mime from the Content-Type so Whisper knows the format.
-  const contentType = req.headers.get('content-type') || 'audio/webm';
-  // Content-Type may include parameters like "audio/webm;codecs=opus"; strip them.
-  const mime = contentType.split(';')[0].trim();
-  const ext = mime.split('/')[1] || 'webm';
+  // Derive filename + mime from the Content-Type the client sent.
+  const incomingCT = req.headers.get('content-type') || 'audio/webm';
+  const fileMime = incomingCT.split(';')[0].trim();
+  const ext = fileMime.split('/')[1] || 'webm';
   const filename = 'recording.' + ext;
 
-  // Write the audio to /tmp and hand the SDK a Node read stream. This is the
-  // pattern in OpenAI's own docs and the only input type their SDK reliably
-  // detects as a file upload (global File and toFile wrappers both fell
-  // through to JSON serialisation on the Netlify runtime).
-  const tmpPath = path.join(
-    tmpdir(),
-    `sop-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
-  );
+  const { body, contentType } = buildMultipart(audioBuffer, filename, fileMime);
 
   try {
-    fs.writeFileSync(tmpPath, Buffer.from(audioBuffer));
-    const transcription = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(tmpPath),
-      model: MODEL,
+    const response = await fetch(OPENAI_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': contentType,
+        'Content-Length': String(body.length),
+      },
+      body,
     });
-    return jsonResponse(200, { text: transcription.text || '' });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('transcribe error:', {
+        status: response.status,
+        body: text.slice(0, 500),
+      });
+      return jsonResponse(500, {
+        error: 'Transcription failed. Try again or type instead.',
+      });
+    }
+
+    const result = await response.json();
+    return jsonResponse(200, { text: result.text || '' });
   } catch (err) {
-    // Log more detail so we can see OpenAI's actual reason in Netlify logs.
-    console.error('transcribe error:', {
+    console.error('transcribe error (network):', {
       name: err?.name,
       message: err?.message,
-      status: err?.status,
-      code: err?.code,
-      type: err?.type,
     });
-    return jsonResponse(500, { error: 'Transcription failed. Try again or type instead.' });
-  } finally {
-    // Best-effort cleanup of the tmp file so /tmp doesn't grow unbounded
-    // between function invocations on a warm instance.
-    try { fs.unlinkSync(tmpPath); } catch (_) {}
+    return jsonResponse(500, {
+      error: 'Transcription failed. Try again or type instead.',
+    });
   }
 };
 
