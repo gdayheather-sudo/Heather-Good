@@ -179,16 +179,20 @@
       setMicStatus('');
       return;
     }
+    // Send the raw audio blob (not wrapped in FormData). Netlify's v2 function
+    // runtime rejects multipart bodies in some setups; raw binary is more
+    // reliable and the server just reads req.arrayBuffer().
     const blob = new Blob(audioChunks, { type: 'audio/webm' });
     audioChunks = [];
     isTranscribing = true;
     setMicStatus('Transcribing\u2026');
 
-    const form = new FormData();
-    form.append('audio', blob, 'recording.webm');
-
     try {
-      const res = await fetch('/api/transcribe', { method: 'POST', body: form });
+      const res = await fetch('/api/transcribe', {
+        method: 'POST',
+        headers: { 'Content-Type': blob.type || 'audio/webm' },
+        body: blob,
+      });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || 'Transcription failed');

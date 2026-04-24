@@ -1,7 +1,13 @@
 // Netlify Function — proxy to OpenAI's Whisper transcription API.
 // Keeps OPENAI_API_KEY server-side and rate-limits per client IP.
+//
+// Body handling note: earlier this parsed req.formData(), but Netlify's v2
+// function runtime was rejecting the multipart body with a Content-Type
+// error. The client now POSTs the raw webm blob with Content-Type: audio/webm
+// and we wrap it with OpenAI's toFile helper for the SDK.
 
 import OpenAI from 'openai';
+import { toFile } from 'openai/uploads';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -53,23 +59,30 @@ export default async (req) => {
     });
   }
 
-  let audioFile;
+  let audioBuffer;
   try {
-    const formData = await req.formData();
-    audioFile = formData.get('audio');
+    audioBuffer = await req.arrayBuffer();
   } catch (err) {
-    console.error('transcribe: formData parse failed', err);
+    console.error('transcribe: body read failed', err);
     return jsonResponse(400, { error: 'Invalid upload' });
   }
 
-  if (!audioFile) {
-    return jsonResponse(400, { error: 'No audio file received' });
+  if (!audioBuffer || audioBuffer.byteLength === 0) {
+    return jsonResponse(400, { error: 'No audio received' });
   }
-  if (typeof audioFile.size === 'number' && audioFile.size > MAX_BYTES) {
+  if (audioBuffer.byteLength > MAX_BYTES) {
     return jsonResponse(400, { error: 'Audio too large (max 25 MB)' });
   }
 
+  // Derive a filename + mime from the Content-Type so Whisper knows the format.
+  const contentType = req.headers.get('content-type') || 'audio/webm';
+  // Content-Type may include parameters like "audio/webm;codecs=opus"; strip them.
+  const mime = contentType.split(';')[0].trim();
+  const ext = mime.split('/')[1] || 'webm';
+  const filename = 'recording.' + ext;
+
   try {
+    const audioFile = await toFile(audioBuffer, filename, { type: mime });
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
       model: MODEL,
