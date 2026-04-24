@@ -13,9 +13,11 @@
 
 [functions]
   node_bundler = "esbuild"
-  # Both SDKs ship pre-built bundles and have node-only deps esbuild can't
-  # reach into. Mark them external so they load from node_modules at runtime.
-  external_node_modules = ["@anthropic-ai/sdk", "openai"]
+  # Anthropic SDK needs to be external (its node-native deps don't bundle).
+  # OpenAI SDK MUST be bundled — when external, its internal multipart
+  # encoder wasn't being resolved at runtime and Whisper rejected the body
+  # with "Invalid Content-Type, must contain application/json".
+  external_node_modules = ["@anthropic-ai/sdk"]
 
 # Pretty URL for the SOP Brain Dump tool.
 [[redirects]]
