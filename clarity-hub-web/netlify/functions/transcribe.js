@@ -7,7 +7,6 @@
 // and we wrap it with OpenAI's toFile helper for the SDK.
 
 import OpenAI from 'openai';
-import { toFile } from 'openai/uploads';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -82,14 +81,22 @@ export default async (req) => {
   const filename = 'recording.' + ext;
 
   try {
-    const audioFile = await toFile(audioBuffer, filename, { type: mime });
+    // Node 20+ exposes File as a global; no need for openai/uploads helper.
+    const audioFile = new File([audioBuffer], filename, { type: mime });
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
       model: MODEL,
     });
     return jsonResponse(200, { text: transcription.text || '' });
   } catch (err) {
-    console.error('transcribe error:', err);
+    // Log more detail so we can see OpenAI's actual reason in Netlify logs.
+    console.error('transcribe error:', {
+      name: err?.name,
+      message: err?.message,
+      status: err?.status,
+      code: err?.code,
+      type: err?.type,
+    });
     return jsonResponse(500, { error: 'Transcription failed. Try again or type instead.' });
   }
 };
