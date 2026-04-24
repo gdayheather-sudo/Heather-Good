@@ -6,7 +6,10 @@
 // error. The client now POSTs the raw webm blob with Content-Type: audio/webm
 // and we wrap it with OpenAI's toFile helper for the SDK.
 
-import OpenAI, { toFile } from 'openai';
+import OpenAI from 'openai';
+import fs from 'node:fs';
+import path from 'node:path';
+import { tmpdir } from 'node:os';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -80,16 +83,19 @@ export default async (req) => {
   const ext = mime.split('/')[1] || 'webm';
   const filename = 'recording.' + ext;
 
+  // Write the audio to /tmp and hand the SDK a Node read stream. This is the
+  // pattern in OpenAI's own docs and the only input type their SDK reliably
+  // detects as a file upload (global File and toFile wrappers both fell
+  // through to JSON serialisation on the Netlify runtime).
+  const tmpPath = path.join(
+    tmpdir(),
+    `sop-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+  );
+
   try {
-    // Node 20's global File isn't detected as an upload by the SDK — OpenAI
-    // sees it as a generic object and falls back to JSON serialisation, which
-    // Whisper rejects. The SDK's toFile helper wraps a Buffer in a shape the
-    // SDK recognises and sends as multipart/form-data.
-    const audioFile = await toFile(Buffer.from(audioBuffer), filename, {
-      type: mime,
-    });
+    fs.writeFileSync(tmpPath, Buffer.from(audioBuffer));
     const transcription = await openai.audio.transcriptions.create({
-      file: audioFile,
+      file: fs.createReadStream(tmpPath),
       model: MODEL,
     });
     return jsonResponse(200, { text: transcription.text || '' });
@@ -103,6 +109,10 @@ export default async (req) => {
       type: err?.type,
     });
     return jsonResponse(500, { error: 'Transcription failed. Try again or type instead.' });
+  } finally {
+    // Best-effort cleanup of the tmp file so /tmp doesn't grow unbounded
+    // between function invocations on a warm instance.
+    try { fs.unlinkSync(tmpPath); } catch (_) {}
   }
 };
 
