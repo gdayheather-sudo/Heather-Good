@@ -287,6 +287,14 @@
   margin-bottom: 12px;
 }
 
+/* Re-assert display:none for the [hidden] attribute. The .sop-error rule
+   above sets display:flex, which has the same specificity as the user-agent
+   [hidden] rule and wins by source order, so without this the banner shows
+   empty on page load. */
+.sop-error[hidden] {
+  display: none;
+}
+
 .sop-error::before {
   content: '!';
   display: inline-flex;
