@@ -110,26 +110,11 @@ export default async (req) => {
 
   const { body, contentType } = buildMultipart(audioBuffer, filename, fileMime);
 
-  // TEMP diagnostic: log the key shape so we can verify Netlify is serving
-  // the value we expect. Logs only the first 8 + last 4 characters and the
-  // length — never the full secret.
-  const apiKey = process.env.OPENAI_API_KEY || '';
-  console.log('transcribe: key check', {
-    length: apiKey.length,
-    prefix: apiKey.slice(0, 8),
-    suffix: apiKey.slice(-4),
-    starts_with: apiKey.startsWith('sk-proj-')
-      ? 'sk-proj-'
-      : apiKey.startsWith('sk-')
-        ? 'sk-'
-        : '(other)',
-  });
-
   try {
     const response = await fetch(OPENAI_ENDPOINT, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': contentType,
         'Content-Length': String(body.length),
       },
