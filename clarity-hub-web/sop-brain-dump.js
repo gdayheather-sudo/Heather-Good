@@ -431,7 +431,7 @@
     try {
       await navigator.clipboard.writeText(sopAsText(currentSop));
       window.open('https://docs.google.com/document/create', '_blank', 'noopener');
-      showToast('Copied to clipboard. Paste into the new Google Doc.');
+      showToast('Your SOP is on the clipboard. Press Ctrl+V (or Cmd+V on Mac) inside the new Google Doc to paste it.');
       track('sop_exported', { format: 'gdocs' });
     } catch (err) {
       showToast('Couldn\u2019t copy. Use Copy first, then open Google Docs.');
