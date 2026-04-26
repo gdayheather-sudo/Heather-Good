@@ -1,0 +1,26 @@
+# Netlify config for clarityhub.com.au.
+# Lives at the repo root so Netlify always reads it. The site itself is in the
+# clarity-hub-web/ subdirectory; `base` makes Netlify treat that as the project
+# root for publishing and function discovery.
+
+[build]
+  base = "clarity-hub-web"
+  publish = "."
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild"
+  # Anthropic SDK needs to be external (its node-native deps don't bundle).
+  # OpenAI SDK MUST be bundled — when external, its internal multipart
+  # encoder wasn't being resolved at runtime and Whisper rejected the body
+  # with "Invalid Content-Type, must contain application/json".
+  external_node_modules = ["@anthropic-ai/sdk"]
+
+# Pretty URL for the SOP Brain Dump tool.
+[[redirects]]
+  from = "/sop-brain-dump"
+  to = "/sop-brain-dump.html"
+  status = 200
