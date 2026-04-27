@@ -499,9 +499,11 @@
 
   // Hide the Google Docs button on mobile entirely — without the auto-open
   // (docs.new deep-links into the Docs app and lands on "doc not found")
-  // it's redundant with the Copy button beside it.
+  // it's redundant with the Copy button beside it. Use inline style rather
+  // than the `hidden` attribute because .sop-export's display:inline-flex
+  // overrides the attribute's implicit display:none.
   if (isMobile()) {
-    gdocsBtn.hidden = true;
+    gdocsBtn.style.display = 'none';
   }
 
   updateWordcount();
