@@ -1,0 +1,264 @@
+// NDIS Clarity Layer — relational schema
+// Per-organisation isolation is enforced at the application layer via the
+// `organisationId` foreign key on every tenant-scoped row.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPPORT_WORKER
+  TEAM_LEAD
+  ADMIN
+  EXTERNAL_VIEWER
+}
+
+enum CaseNoteStatus {
+  DRAFT
+  APPROVED
+}
+
+enum ReportType {
+  MONTHLY_SUMMARY
+  PLAN_REVIEW
+  ALLIED_HEALTH_UPDATE
+}
+
+enum ReportStatus {
+  GENERATING
+  READY
+  FAILED
+}
+
+enum AuditAction {
+  CREATED
+  UPDATED
+  APPROVED
+  GENERATED
+  SHARED
+  UNSHARED
+  DELETED
+  LOGIN
+  LOGOUT
+}
+
+model Organisation {
+  id              String          @id @default(cuid())
+  name            String
+  legalName       String?
+  abn             String?
+  address         String?
+  contactEmail    String?
+  contactPhone    String?
+  logoUrl         String?
+  letterheadHtml  String?
+  primaryColor    String?         @default("#2c8a6f")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  users           User[]
+  participants    Participant[]
+  caseNotes       CaseNote[]
+  reports         Report[]
+  auditEvents     AuditEvent[]
+}
+
+model User {
+  id              String          @id @default(cuid())
+  organisationId  String
+  organisation    Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  email           String          @unique
+  passwordHash    String
+  fullName        String
+  role            Role
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  caseNotesCreated   CaseNote[]   @relation("caseNoteAuthor")
+  caseNotesApproved  CaseNote[]   @relation("caseNoteApprover")
+  reportsGenerated   Report[]     @relation("reportGenerator")
+  caseNoteVersions   CaseNoteVersion[]
+  auditEvents        AuditEvent[]
+
+  @@index([organisationId])
+}
+
+model Participant {
+  id                  String   @id @default(cuid())
+  organisationId      String
+  organisation        Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  fullName            String
+  preferredName       String?
+  dateOfBirth         DateTime?
+
+  // Encrypted JSON blobs (AES-256-GCM) — keeps sensitive context out of plain
+  // table columns. Decryption happens in the API layer for authorised roles.
+  supportContextEnc   String?
+  riskSafetyEnc       String?
+  contactsEnc         String?
+  medicationsEnc      String?
+
+  // Non-sensitive structured data
+  goals               ParticipantGoal[]
+
+  // Consent / sharing
+  shareWithFamily       Boolean @default(false)
+  shareWithCoordinator  Boolean @default(false)
+  consentNotes          String?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  caseNotes           CaseNote[]
+  reports             Report[]
+
+  @@index([organisationId])
+}
+
+model ParticipantGoal {
+  id              String       @id @default(cuid())
+  participantId   String
+  participant     Participant  @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  tags            String[]     @default([])
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+
+  caseNoteGoals   CaseNoteGoal[]
+
+  @@index([participantId])
+}
+
+model CaseNote {
+  id              String          @id @default(cuid())
+  organisationId  String
+  organisation    Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  participantId   String
+  participant     Participant     @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  authorId        String
+  author          User            @relation("caseNoteAuthor", fields: [authorId], references: [id])
+  approverId      String?
+  approver        User?           @relation("caseNoteApprover", fields: [approverId], references: [id])
+
+  occurredAt      DateTime        @default(now())
+  status          CaseNoteStatus  @default(DRAFT)
+
+  // Structured raw input
+  supportDelivered      String
+  participantResponse   String
+  risksIncidents        String?
+  medicationPrompted    String?
+  progressTowardGoals   String?
+  nextSteps             String?
+
+  // AI-structured output (DAP-style)
+  structuredOutput      String?
+
+  approvedAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  goals                 CaseNoteGoal[]
+  versions              CaseNoteVersion[]
+
+  @@index([organisationId])
+  @@index([participantId])
+  @@index([authorId])
+  @@index([occurredAt])
+}
+
+model CaseNoteGoal {
+  caseNoteId      String
+  goalId          String
+  caseNote        CaseNote         @relation(fields: [caseNoteId], references: [id], onDelete: Cascade)
+  goal            ParticipantGoal  @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@id([caseNoteId, goalId])
+  @@index([goalId])
+}
+
+model CaseNoteVersion {
+  id              String      @id @default(cuid())
+  caseNoteId      String
+  caseNote        CaseNote    @relation(fields: [caseNoteId], references: [id], onDelete: Cascade)
+  editedById      String
+  editedBy        User        @relation(fields: [editedById], references: [id])
+  snapshot        Json
+  reason          String?
+  createdAt       DateTime    @default(now())
+
+  @@index([caseNoteId])
+}
+
+model Report {
+  id              String          @id @default(cuid())
+  organisationId  String
+  organisation    Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  participantId   String
+  participant     Participant     @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  generatedById   String
+  generatedBy     User            @relation("reportGenerator", fields: [generatedById], references: [id])
+
+  type            ReportType
+  status          ReportStatus    @default(GENERATING)
+
+  rangeStart      DateTime
+  rangeEnd        DateTime
+
+  title           String
+  narrative       String?         // AI-generated narrative
+  metricsJson     Json?           // structured metrics (counts, trends)
+
+  pdfPath         String?
+  docxPath        String?
+
+  // Sharing
+  shareToken      String?         @unique
+  sharedWithFamily        Boolean @default(false)
+  sharedWithCoordinator   Boolean @default(false)
+  sharedAt        DateTime?
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  versions        ReportVersion[]
+
+  @@index([organisationId])
+  @@index([participantId])
+}
+
+model ReportVersion {
+  id              String      @id @default(cuid())
+  reportId        String
+  report          Report      @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  snapshot        Json
+  createdAt       DateTime    @default(now())
+
+  @@index([reportId])
+}
+
+model AuditEvent {
+  id              String        @id @default(cuid())
+  organisationId  String
+  organisation    Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  actorId         String?
+  actor           User?         @relation(fields: [actorId], references: [id])
+  action          AuditAction
+  entityType      String        // e.g. "CaseNote", "Report", "Participant"
+  entityId        String?
+  metadata        Json?
+  ip              String?
+  createdAt       DateTime      @default(now())
+
+  @@index([organisationId, createdAt])
+  @@index([entityType, entityId])
+}
