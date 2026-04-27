@@ -13,10 +13,6 @@ import {
   Paragraph,
   TextRun,
   HeadingLevel,
-  Table,
-  TableRow,
-  TableCell,
-  WidthType,
   BorderStyle,
 } from 'docx';
 
@@ -34,35 +30,12 @@ function safeArr(v) {
   return Array.isArray(v) ? v : [];
 }
 
-function metaRow(label, value) {
-  const cellBorder = {
-    top: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
-    left: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
-    right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
-    bottom: { style: BorderStyle.SINGLE, size: 4, color: BRAND_RULE },
-  };
-  return new TableRow({
+function metaPara(label, value) {
+  return new Paragraph({
+    spacing: { after: 100 },
     children: [
-      new TableCell({
-        width: { size: 28, type: WidthType.PERCENTAGE },
-        borders: cellBorder,
-        children: [
-          new Paragraph({
-            children: [
-              new TextRun({ text: label, bold: true, color: BRAND_NAVY, size: 22 }),
-            ],
-          }),
-        ],
-      }),
-      new TableCell({
-        width: { size: 72, type: WidthType.PERCENTAGE },
-        borders: cellBorder,
-        children: [
-          new Paragraph({
-            children: [new TextRun({ text: safeStr(value), color: BRAND_INK, size: 22 })],
-          }),
-        ],
-      }),
+      new TextRun({ text: label + ': ', bold: true, color: BRAND_NAVY, size: 22 }),
+      new TextRun({ text: safeStr(value), color: BRAND_INK, size: 22 }),
     ],
   });
 }
@@ -134,16 +107,13 @@ function buildDoc(sop) {
   const processName = safeStr(sop?.processName) || 'Standard Operating Procedure';
   const tools = safeArr(sop?.toolsUsed).map(safeStr).filter(Boolean).join(', ');
 
-  const overviewTable = new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    rows: [
-      metaRow('Purpose', sop?.purpose),
-      metaRow('Trigger', sop?.trigger),
-      metaRow('Frequency', sop?.frequency),
-      metaRow('Owner', sop?.owner),
-      metaRow('Tools', tools),
-    ],
-  });
+  const overview = [
+    metaPara('Purpose', sop?.purpose),
+    metaPara('Trigger', sop?.trigger),
+    metaPara('Frequency', sop?.frequency),
+    metaPara('Owner', sop?.owner),
+    metaPara('Tools', tools),
+  ];
 
   const children = [
     new Paragraph({
@@ -163,7 +133,7 @@ function buildDoc(sop) {
       ],
     }),
     sectionHeading('Overview'),
-    overviewTable,
+    ...overview,
     sectionHeading('Steps'),
     ...stepList(sop?.steps),
     sectionHeading('Inputs Needed Before Starting'),
