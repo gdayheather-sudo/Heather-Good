@@ -497,5 +497,13 @@
   gdocsBtn.addEventListener('click', exportGoogleDocs);
   wordBtn.addEventListener('click', exportWord);
 
+  // On mobile we don't auto-open Google Docs (the docs.new deep-link lands on
+  // "doc not found" inside the Docs app), so update the label to match what
+  // the button actually does.
+  if (isMobile()) {
+    const gdocsLabel = gdocsBtn.querySelector('.sop-export__label--gdocs');
+    if (gdocsLabel) gdocsLabel.textContent = 'Copy for Google Docs';
+  }
+
   updateWordcount();
 })();
