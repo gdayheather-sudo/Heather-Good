@@ -1,0 +1,276 @@
+// Netlify Function — builds a real Office Open XML (.docx) from an SOP JSON
+// payload and returns it as a downloadable attachment. The previous
+// "HTML-as-.doc" approach failed Mobile Word's strict format check, so we
+// generate proper OOXML server-side using the `docx` library.
+//
+// Accepts both application/json and application/x-www-form-urlencoded so the
+// client can use a hidden form-POST (most reliable cross-platform download
+// trigger, including iOS Safari) or a regular fetch().
+
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+  BorderStyle,
+} from 'docx';
+
+const BRAND_NAVY = '3F5366';
+const BRAND_SAGE = '8FA79A';
+const BRAND_INK = '2E2E2E';
+const BRAND_MUTED = '6B6B6B';
+const BRAND_RULE = 'E8E2D8';
+
+function safeStr(v) {
+  return v == null ? '' : String(v);
+}
+
+function safeArr(v) {
+  return Array.isArray(v) ? v : [];
+}
+
+function metaRow(label, value) {
+  const cellBorder = {
+    top: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+    left: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+    right: { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' },
+    bottom: { style: BorderStyle.SINGLE, size: 4, color: BRAND_RULE },
+  };
+  return new TableRow({
+    children: [
+      new TableCell({
+        width: { size: 28, type: WidthType.PERCENTAGE },
+        borders: cellBorder,
+        children: [
+          new Paragraph({
+            children: [
+              new TextRun({ text: label, bold: true, color: BRAND_NAVY, size: 22 }),
+            ],
+          }),
+        ],
+      }),
+      new TableCell({
+        width: { size: 72, type: WidthType.PERCENTAGE },
+        borders: cellBorder,
+        children: [
+          new Paragraph({
+            children: [new TextRun({ text: safeStr(value), color: BRAND_INK, size: 22 })],
+          }),
+        ],
+      }),
+    ],
+  });
+}
+
+function sectionHeading(text) {
+  return new Paragraph({
+    heading: HeadingLevel.HEADING_2,
+    spacing: { before: 320, after: 120 },
+    border: {
+      bottom: { color: BRAND_SAGE, space: 4, style: BorderStyle.SINGLE, size: 6 },
+    },
+    children: [new TextRun({ text, color: BRAND_NAVY, size: 26 })],
+  });
+}
+
+function bulletList(items) {
+  const list = safeArr(items);
+  if (!list.length) {
+    return [
+      new Paragraph({
+        children: [
+          new TextRun({ text: 'None noted.', italics: true, color: BRAND_MUTED, size: 22 }),
+        ],
+      }),
+    ];
+  }
+  return list.map(
+    (item) =>
+      new Paragraph({
+        bullet: { level: 0 },
+        spacing: { after: 80 },
+        children: [new TextRun({ text: safeStr(item), color: BRAND_INK, size: 22 })],
+      }),
+  );
+}
+
+function stepList(steps) {
+  const list = safeArr(steps);
+  if (!list.length) {
+    return [
+      new Paragraph({
+        children: [
+          new TextRun({ text: 'No steps provided.', italics: true, color: BRAND_MUTED, size: 22 }),
+        ],
+      }),
+    ];
+  }
+  return list.map(
+    (step, i) =>
+      new Paragraph({
+        spacing: { after: 160 },
+        indent: { left: 360, hanging: 260 },
+        children: [
+          new TextRun({ text: `${i + 1}.  `, bold: true, color: BRAND_NAVY, size: 22 }),
+          new TextRun({ text: safeStr(step?.action), bold: true, color: BRAND_INK, size: 22 }),
+          new TextRun({ break: 1 }),
+          new TextRun({
+            text: `${safeStr(step?.owner)} — ${safeStr(step?.tool)}`,
+            italics: true,
+            color: BRAND_MUTED,
+            size: 20,
+          }),
+        ],
+      }),
+  );
+}
+
+function buildDoc(sop) {
+  const processName = safeStr(sop?.processName) || 'Standard Operating Procedure';
+  const tools = safeArr(sop?.toolsUsed).map(safeStr).filter(Boolean).join(', ');
+
+  const overviewTable = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      metaRow('Purpose', sop?.purpose),
+      metaRow('Trigger', sop?.trigger),
+      metaRow('Frequency', sop?.frequency),
+      metaRow('Owner', sop?.owner),
+      metaRow('Tools', tools),
+    ],
+  });
+
+  const children = [
+    new Paragraph({
+      heading: HeadingLevel.HEADING_1,
+      spacing: { after: 80 },
+      children: [new TextRun({ text: processName, color: BRAND_NAVY, size: 44 })],
+    }),
+    new Paragraph({
+      spacing: { after: 240 },
+      children: [
+        new TextRun({
+          text: 'Created with The Clarity Hub — SOP Brain Dump',
+          italics: true,
+          color: BRAND_MUTED,
+          size: 20,
+        }),
+      ],
+    }),
+    sectionHeading('Overview'),
+    overviewTable,
+    sectionHeading('Steps'),
+    ...stepList(sop?.steps),
+    sectionHeading('Inputs Needed Before Starting'),
+    ...bulletList(sop?.inputsNeeded),
+    sectionHeading('Outputs Produced'),
+    ...bulletList(sop?.outputsProduced),
+    sectionHeading('Known Failure Points'),
+    ...bulletList(sop?.knownFailurePoints),
+    sectionHeading('Assumptions to Confirm'),
+    ...bulletList(sop?.assumptionsToConfirm),
+    new Paragraph({
+      spacing: { before: 480 },
+      border: {
+        top: { color: BRAND_RULE, space: 4, style: BorderStyle.SINGLE, size: 6 },
+      },
+      children: [
+        new TextRun({
+          text: 'Generated via the SOP Brain Dump workflow — clarityhub.com.au',
+          italics: true,
+          color: BRAND_MUTED,
+          size: 18,
+        }),
+      ],
+    }),
+  ];
+
+  return new Document({
+    creator: 'The Clarity Hub',
+    title: processName,
+    description: 'SOP generated by The Clarity Hub SOP Brain Dump',
+    styles: {
+      default: {
+        document: {
+          run: { font: 'Calibri', size: 22, color: BRAND_INK },
+        },
+      },
+    },
+    sections: [{ properties: {}, children }],
+  });
+}
+
+async function readSop(req) {
+  const ct = (req.headers.get('content-type') || '').toLowerCase();
+  if (ct.includes('application/x-www-form-urlencoded')) {
+    const text = await req.text();
+    const params = new URLSearchParams(text);
+    const raw = params.get('sop');
+    if (!raw) return null;
+    return JSON.parse(raw);
+  }
+  return await req.json();
+}
+
+function errorResponse(status, message) {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+export default async (req) => {
+  if (req.method !== 'POST') {
+    return errorResponse(405, 'Method not allowed');
+  }
+
+  let sop;
+  try {
+    sop = await readSop(req);
+  } catch {
+    return errorResponse(400, 'Invalid request body');
+  }
+
+  if (!sop || typeof sop !== 'object' || !sop.processName) {
+    return errorResponse(400, 'Invalid SOP payload');
+  }
+
+  try {
+    const doc = buildDoc(sop);
+    const buffer = await Packer.toBuffer(doc);
+
+    // Convert Node Buffer to a standalone ArrayBuffer. Netlify Functions v2
+    // uses a web-standard runtime; passing a Node Buffer directly works in
+    // most cases but a clean ArrayBuffer is portable across all environments.
+    const arrayBuffer = buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength,
+    );
+
+    const safeName =
+      String(sop.processName).replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').slice(0, 80) || 'SOP';
+
+    return new Response(arrayBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type':
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'Content-Disposition': `attachment; filename="${safeName}.docx"`,
+        'Content-Length': String(arrayBuffer.byteLength),
+        'Cache-Control': 'no-store',
+      },
+    });
+  } catch (err) {
+    console.error('generate-docx error:', err);
+    return errorResponse(500, 'Word export failed: ' + (err && err.message ? err.message : 'unknown error'));
+  }
+};
+
+export const config = {
+  path: '/api/generate-docx',
+};

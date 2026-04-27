@@ -362,55 +362,6 @@
     return L.join('\n');
   }
 
-  function sopAsWordHtml(sop) {
-    const dash = '\u2014';
-    function e(s) { return esc(s); }
-    function list(items) {
-      return '<ul>' + (items || []).map((i) => '<li>' + e(i) + '</li>').join('') + '</ul>';
-    }
-    const stepsHtml = (sop.steps || []).map((s) => {
-      return '<li><strong>' + e(s.action) + '</strong><br><span class="step-meta">' + e(s.owner) + ' ' + dash + ' ' + e(s.tool) + '</span></li>';
-    }).join('');
-
-    return (
-      '<!DOCTYPE html>\n' +
-      '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">\n' +
-      '<head><meta charset="utf-8"><title>' + e(sop.processName) + '</title>\n' +
-      '<style>\n' +
-      'body { font-family: Calibri, Arial, sans-serif; color: #2E2E2E; line-height: 1.5; font-size: 11pt; }\n' +
-      'h1 { font-family: Georgia, serif; color: #3F5366; font-size: 22pt; margin-bottom: 4pt; }\n' +
-      'h2 { font-family: Georgia, serif; color: #3F5366; font-size: 13pt; border-bottom: 1px solid #8FA79A; padding-bottom: 3pt; margin-top: 18pt; }\n' +
-      '.meta { color: #6B6B6B; font-size: 10pt; font-style: italic; margin-top: 0; }\n' +
-      'table { border-collapse: collapse; width: 100%; margin-top: 8pt; }\n' +
-      'td { padding: 5pt 10pt; border-bottom: 1px solid #E8E2D8; vertical-align: top; }\n' +
-      'td.label { font-weight: bold; color: #3F5366; width: 28%; }\n' +
-      'ol, ul { padding-left: 20pt; }\n' +
-      'li { margin-bottom: 5pt; }\n' +
-      '.step-meta { color: #6B6B6B; font-style: italic; font-size: 10pt; }\n' +
-      '.footer { color: #6B6B6B; font-size: 9pt; font-style: italic; margin-top: 24pt; border-top: 1px solid #E8E2D8; padding-top: 8pt; }\n' +
-      '</style></head>\n' +
-      '<body>\n' +
-      '<h1>' + e(sop.processName) + '</h1>\n' +
-      '<p class="meta">Created with The Clarity Hub ' + dash + ' SOP Brain Dump</p>\n' +
-      '<h2>Overview</h2>\n' +
-      '<table>\n' +
-      '<tr><td class="label">Purpose</td><td>' + e(sop.purpose || '') + '</td></tr>\n' +
-      '<tr><td class="label">Trigger</td><td>' + e(sop.trigger || '') + '</td></tr>\n' +
-      '<tr><td class="label">Frequency</td><td>' + e(sop.frequency || '') + '</td></tr>\n' +
-      '<tr><td class="label">Owner</td><td>' + e(sop.owner || '') + '</td></tr>\n' +
-      '<tr><td class="label">Tools</td><td>' + e((sop.toolsUsed || []).join(', ')) + '</td></tr>\n' +
-      '</table>\n' +
-      '<h2>Steps</h2>\n' +
-      '<ol>' + stepsHtml + '</ol>\n' +
-      '<h2>Inputs Needed Before Starting</h2>\n' + list(sop.inputsNeeded) + '\n' +
-      '<h2>Outputs Produced</h2>\n' + list(sop.outputsProduced) + '\n' +
-      '<h2>Known Failure Points</h2>\n' + list(sop.knownFailurePoints) + '\n' +
-      '<h2>Assumptions to Confirm</h2>\n' + list(sop.assumptionsToConfirm) + '\n' +
-      '<p class="footer">Generated via the SOP Brain Dump workflow ' + dash + ' clarityhub.com.au</p>\n' +
-      '</body></html>'
-    );
-  }
-
   async function exportCopy() {
     if (!currentSop) return;
     try {
@@ -426,32 +377,104 @@
     }
   }
 
-  async function exportGoogleDocs() {
-    if (!currentSop) return;
-    try {
-      await navigator.clipboard.writeText(sopAsText(currentSop));
-      window.open('https://docs.google.com/document/create', '_blank', 'noopener');
-      showToast('Your SOP is on the clipboard. Press Ctrl+V (or Cmd+V on Mac) inside the new Google Doc to paste it.');
-      track('sop_exported', { format: 'gdocs' });
-    } catch (err) {
-      showToast('Couldn\u2019t copy. Use Copy first, then open Google Docs.');
-    }
+  function isMobile() {
+    return /Mobi|Android|iP(hone|ad|od)/i.test(navigator.userAgent);
+  }
+  function isIOS() {
+    return /iP(hone|ad|od)/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   }
 
-  function exportWord() {
+  // Put the SOP on the clipboard and (on desktop only) auto-open a fresh
+  // Google Doc. We skip the auto-open on mobile because the iOS/Android
+  // Google Docs apps intercept docs.new and frequently land on a "doc not
+  // found" page \u2014 copying + a clear instruction is more reliable.
+  // The window.open call must run synchronously inside the click handler,
+  // BEFORE any await, or mobile browsers block it as a script popup anyway.
+  function exportGoogleDocs() {
     if (!currentSop) return;
-    const html = sopAsWordHtml(currentSop);
-    const blob = new Blob(['\ufeff' + html], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = (currentSop.processName || 'SOP').replace(/[^a-z0-9]/gi, '_') + '.doc';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 0);
-    showToast('Downloaded. Opens in Word, or upload to Google Drive to convert.');
-    track('sop_exported', { format: 'word' });
+    const mobile = isMobile();
+    const newWin = mobile ? null : window.open('https://docs.new', '_blank', 'noopener');
+    const text = sopAsText(currentSop);
+    const pasteHint = mobile
+      ? 'Open the Google Docs app, tap + for a new doc, then long-press \u2192 Paste.'
+      : 'Press Ctrl+V (or Cmd+V on Mac) inside the new Google Doc to paste it.';
+
+    Promise.resolve()
+      .then(() => navigator.clipboard.writeText(text))
+      .then(() => {
+        showToast('Your SOP is on the clipboard. ' + pasteHint);
+        track('sop_exported', { format: 'gdocs' });
+      })
+      .catch(() => {
+        if (newWin && !newWin.closed) {
+          try { newWin.close(); } catch (_) {}
+        }
+        showToast('Couldn\u2019t copy. Use Copy first, then open Google Docs.');
+      });
+  }
+
+  // Export to a real .docx via the server. Uses fetch so we can detect server
+  // errors and surface a real message. iOS Safari ignores the download
+  // attribute on blob URLs, so on iOS we open the blob in a placeholder tab
+  // (opened synchronously to keep the user gesture) and let Safari's preview
+  // / share sheet handle it. Desktop and Android use the standard download
+  // anchor pattern.
+  async function exportWord() {
+    if (!currentSop) return;
+
+    const placeholder = isIOS() ? window.open('about:blank', '_blank') : null;
+    if (placeholder) {
+      try {
+        placeholder.document.title = 'Generating Word document\u2026';
+        placeholder.document.body.style.font = '16px -apple-system, system-ui, sans-serif';
+        placeholder.document.body.style.padding = '24px';
+        placeholder.document.body.textContent = 'Generating your Word document\u2026';
+      } catch (_) {}
+    }
+    showToast('Generating your Word document\u2026');
+
+    try {
+      const res = await fetch('/api/generate-docx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentSop),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || 'Word export failed (HTTP ' + res.status + ')');
+      }
+      const blob = await res.blob();
+      if (!blob || blob.size < 1024) {
+        throw new Error('Word file came back empty. Try again in a moment.');
+      }
+      const url = URL.createObjectURL(blob);
+      const filename =
+        (currentSop.processName || 'SOP').replace(/[^a-z0-9]/gi, '_').slice(0, 80) + '.docx';
+
+      if (placeholder && !placeholder.closed) {
+        // iOS path: send the placeholder to the blob URL. Safari opens its
+        // preview for .docx and the user can tap the share icon to save to
+        // Files or open in Word.
+        placeholder.location.href = url;
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      showToast('Word document ready (' + Math.round(blob.size / 1024) + ' KB).');
+      track('sop_exported', { format: 'word' });
+    } catch (err) {
+      if (placeholder && !placeholder.closed) {
+        try { placeholder.close(); } catch (_) {}
+      }
+      showToast(err && err.message ? err.message : 'Couldn\u2019t export to Word. Try Copy instead.');
+    }
   }
 
   // ---------- Reset ----------
