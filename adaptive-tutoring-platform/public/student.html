@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>My Learning - Bright Paths</title>
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/student.css" />
+</head>
+<body class="theme-default">
+  <a href="#main" class="skip-link">Skip to learning</a>
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="hi" id="greet">Hi!</span>
+    </div>
+    <div class="topbar-right">
+      <button id="read-aloud" class="ghost" aria-pressed="false" title="Read aloud">🔊 Read aloud</button>
+      <button id="settings-btn" class="ghost" title="Settings">⚙️</button>
+      <button id="logout" class="ghost" title="Sign out">Sign out</button>
+    </div>
+  </header>
+
+  <main id="main" class="student-shell">
+    <section id="dashboard" class="dashboard">
+      <div class="hero card">
+        <div class="hero-left">
+          <h1>What I'm learning today</h1>
+          <p class="muted" id="hero-sub">Let's pick up where you left off.</p>
+          <button class="primary big" id="start-lesson">Start a lesson</button>
+        </div>
+        <div class="hero-right" aria-hidden="true">
+          <div class="mascot" id="mascot">🌟</div>
+        </div>
+      </div>
+
+      <div class="stats grid">
+        <div class="card stat">
+          <div class="stat-label">Streak</div>
+          <div class="stat-value"><span id="streak">0</span><small> days</small></div>
+        </div>
+        <div class="card stat">
+          <div class="stat-label">Points</div>
+          <div class="stat-value"><span id="points">0</span><small> ⭐</small></div>
+        </div>
+        <div class="card stat">
+          <div class="stat-label">Maths level</div>
+          <div class="stat-value"><span id="lvl-maths">1.0</span></div>
+        </div>
+        <div class="card stat">
+          <div class="stat-label">Reading level</div>
+          <div class="stat-value"><span id="lvl-eng">1.0</span></div>
+        </div>
+      </div>
+
+      <div class="card progress-card">
+        <div class="flex spread center"><h2>My journey</h2><span class="muted" id="journey-text">Keep going!</span></div>
+        <div class="progress-bar"><span id="journey-bar" style="width:0%"></span></div>
+        <div class="badges" id="badges"></div>
+      </div>
+    </section>
+
+    <section id="lesson" hidden class="lesson">
+      <div class="lesson-header">
+        <button id="lesson-back" class="ghost">← Home</button>
+        <div class="lesson-title" id="lesson-title">Lesson</div>
+        <div class="lesson-progress">
+          <span class="progress-bar small"><span id="lesson-bar" style="width:0%"></span></span>
+        </div>
+      </div>
+
+      <div id="phase-teach" class="phase teach card" hidden>
+        <h2 id="teach-intro">Let's learn!</h2>
+        <div class="examples" id="teach-examples"></div>
+        <div class="flex">
+          <button class="primary" id="teach-next">I'm ready</button>
+          <button class="ghost" id="teach-replay">🔊 Read again</button>
+        </div>
+      </div>
+
+      <div id="phase-item" class="phase item card" hidden>
+        <p class="prompt" id="item-prompt"></p>
+        <div id="item-input" class="item-input"></div>
+        <div id="feedback" class="feedback" hidden>
+          <div class="feedback-icon" id="feedback-icon"></div>
+          <p id="feedback-text"></p>
+          <button class="primary" id="feedback-next">Next</button>
+        </div>
+      </div>
+
+      <div id="phase-done" class="phase done card" hidden>
+        <h2>🎉 You did it!</h2>
+        <p id="done-summary">Great work today.</p>
+        <div class="flex">
+          <button class="primary" id="done-again">Another lesson</button>
+          <button class="ghost" id="done-home">Home</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="settings" hidden class="settings card">
+      <h2>Settings</h2>
+      <p class="muted">Make it just right for you.</p>
+      <div class="grid">
+        <label>Theme
+          <select id="set-theme">
+            <option value="space">Space</option>
+            <option value="ocean">Ocean</option>
+            <option value="dogs">Dogs</option>
+            <option value="art">Art</option>
+            <option value="default">Default</option>
+          </select>
+        </label>
+        <label class="switch"><input type="checkbox" id="set-large" /> Bigger text</label>
+        <label class="switch"><input type="checkbox" id="set-contrast" /> High contrast</label>
+        <label class="switch"><input type="checkbox" id="set-motion" /> Less motion</label>
+        <label class="switch"><input type="checkbox" id="set-sound" /> Less sound</label>
+        <button class="primary" id="settings-close">Done</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/lesson-engine.js"></script>
+  <script src="/js/student-app.js"></script>
+</body>
+</html>

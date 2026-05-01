@@ -1,0 +1,17 @@
+{
+  "name": "adaptive-tutoring-platform",
+  "version": "0.1.0",
+  "description": "Web-based adaptive tutoring platform for school-aged learners (F-Year 10), aligned to the Australian National Curriculum (ACARA v9.0). Personalises content by ability, not age.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "seed": "node src/seed.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Bright Paths</title>
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/admin.css" />
+</head>
+<body class="theme-default">
+  <header class="topbar">
+    <strong>Admin · Bright Paths</strong>
+    <div class="topbar-right">
+      <a href="/mentor.html" class="btn ghost">Mentor view</a>
+      <button id="logout" class="ghost">Sign out</button>
+    </div>
+  </header>
+
+  <main class="admin-shell">
+    <section class="kpi-row">
+      <div class="card kpi"><div class="kpi-label">Active learners</div><div class="kpi-val" id="k-students">0</div></div>
+      <div class="card kpi"><div class="kpi-label">Attempts (org)</div><div class="kpi-val" id="k-attempts">0</div></div>
+      <div class="card kpi"><div class="kpi-label">Avg accuracy</div><div class="kpi-val" id="k-acc">0%</div></div>
+      <div class="card kpi"><div class="kpi-label">Framework</div><div class="kpi-val">ACARA v9.0</div></div>
+    </section>
+
+    <section class="card">
+      <div class="flex spread center">
+        <h2>All students</h2>
+        <div class="flex">
+          <input id="filter" placeholder="Filter by name…" />
+          <button id="export-all" class="primary">Export org CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th><th>Year</th><th>Maths</th><th>English</th>
+              <th>Attempts</th><th>Accuracy</th><th>Last active</th><th>Streak</th><th>Report</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Audit log (last 25)</h2>
+      <ul id="audit" class="audit"></ul>
+    </section>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/admin-app.js"></script>
+</body>
+</html>

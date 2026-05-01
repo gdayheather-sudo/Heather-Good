@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mentor - Bright Paths</title>
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/mentor.css" />
+</head>
+<body class="theme-default">
+  <header class="topbar">
+    <div class="topbar-left"><strong>Mentor dashboard</strong></div>
+    <div class="topbar-right">
+      <a href="/admin.html" class="btn ghost" id="admin-link" hidden>Admin view</a>
+      <button id="logout" class="ghost">Sign out</button>
+    </div>
+  </header>
+
+  <main class="mentor-shell">
+    <section class="left">
+      <div class="card">
+        <div class="flex spread center">
+          <h2>Students</h2>
+          <button class="primary" id="add-student">+ Add</button>
+        </div>
+        <ul class="student-list" id="student-list"></ul>
+      </div>
+    </section>
+
+    <section class="right">
+      <div id="empty" class="card"><p class="muted">Select a student to see their progress.</p></div>
+
+      <article id="detail" class="grid" hidden>
+        <div class="card">
+          <div class="flex spread center">
+            <div>
+              <h2 id="d-name">Student</h2>
+              <p class="muted"><span id="d-meta"></span></p>
+            </div>
+            <div class="flex">
+              <a id="d-csv" class="btn ghost" download>Download CSV</a>
+            </div>
+          </div>
+
+          <div class="kpis">
+            <div><div class="kpi-label">Maths band</div><div class="kpi-val" id="d-maths">1.0</div></div>
+            <div><div class="kpi-label">English band</div><div class="kpi-val" id="d-english">1.0</div></div>
+            <div><div class="kpi-label">Streak</div><div class="kpi-val" id="d-streak">0</div></div>
+            <div><div class="kpi-label">Total attempts</div><div class="kpi-val" id="d-attempts">0</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Skill mastery (traffic light)</h3>
+          <p class="muted">Each tile is one ACARA outcome. Green = mastered, amber = developing, red = struggling.</p>
+          <div id="skill-map" class="skill-map"></div>
+        </div>
+
+        <div class="card">
+          <h3>Recommended focus</h3>
+          <ul id="recs" class="recs"></ul>
+          <div class="flex spread">
+            <small class="muted">Tick to set as a mentor focus area (overrides AI selection).</small>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Profile</h3>
+          <form id="profile-form" class="grid two">
+            <label>Name <input id="p-name" /></label>
+            <label>Year level
+              <select id="p-year">
+                <option value="F">Foundation</option>
+                <option value="1">Year 1</option>
+                <option value="2">Year 2</option>
+                <option value="3">Year 3</option>
+              </select>
+            </label>
+            <label>Theme
+              <select id="p-theme">
+                <option value="space">Space</option>
+                <option value="ocean">Ocean</option>
+                <option value="dogs">Dogs</option>
+                <option value="art">Art</option>
+                <option value="default">Default</option>
+              </select>
+            </label>
+            <label>Interests (comma separated) <input id="p-interests" placeholder="dogs, sport, art" /></label>
+            <label>Strengths <input id="p-strengths" placeholder="visual learning, vocabulary" /></label>
+            <label>Challenges <input id="p-challenges" placeholder="working memory, sustained focus" /></label>
+            <fieldset class="full">
+              <legend>Sensory considerations</legend>
+              <label class="switch"><input type="checkbox" id="p-large" /> Larger text</label>
+              <label class="switch"><input type="checkbox" id="p-contrast" /> High contrast</label>
+              <label class="switch"><input type="checkbox" id="p-motion" /> Reduce motion</label>
+              <label class="switch"><input type="checkbox" id="p-sound" /> Reduce sound</label>
+            </fieldset>
+            <button class="primary full" type="submit">Save profile</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Time on task (last 14 days)</h3>
+          <div id="time-chart" class="time-chart"></div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <dialog id="add-dialog">
+    <form id="add-form" method="dialog">
+      <h3>Add student</h3>
+      <label>Name <input name="name" required /></label>
+      <label>Year level
+        <select name="yearLevel"><option>1</option><option>F</option><option>2</option><option>3</option></select>
+      </label>
+      <label>Theme
+        <select name="theme"><option>space</option><option>ocean</option><option>dogs</option><option>art</option></select>
+      </label>
+      <div class="flex spread">
+        <button value="cancel" class="ghost">Cancel</button>
+        <button id="add-confirm" class="primary" value="ok">Add</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/mentor-app.js"></script>
+</body>
+</html>

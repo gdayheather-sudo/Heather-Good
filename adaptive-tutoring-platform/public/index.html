@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Bright Paths - Adaptive Learning</title>
+  <meta name="description" content="A calm, personalised learning platform aligned to the Australian Curriculum (ACARA v9.0)." />
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/login.css" />
+</head>
+<body class="theme-default">
+  <main class="login-shell" role="main">
+    <header class="login-hero">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 64 64" width="56" height="56" focusable="false">
+          <circle cx="32" cy="32" r="28" fill="#7aa7ff" />
+          <path d="M16 36c4-10 12-14 16-14s12 4 16 14" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" />
+          <circle cx="24" cy="28" r="3" fill="#fff" />
+          <circle cx="40" cy="28" r="3" fill="#fff" />
+        </svg>
+      </div>
+      <h1>Bright Paths</h1>
+      <p class="tagline">Meet the student where they are - not where the system expects them to be.</p>
+    </header>
+
+    <section class="role-pick" aria-labelledby="role-heading">
+      <h2 id="role-heading">Who are you?</h2>
+      <div class="role-grid">
+        <button class="role-card" data-role="student">
+          <span class="role-icon" aria-hidden="true">🌱</span>
+          <span class="role-title">Student</span>
+          <span class="role-sub">Big buttons, small steps.</span>
+        </button>
+        <button class="role-card" data-role="mentor">
+          <span class="role-icon" aria-hidden="true">🤝</span>
+          <span class="role-title">Mentor</span>
+          <span class="role-sub">Teacher, support worker, parent.</span>
+        </button>
+        <button class="role-card" data-role="admin">
+          <span class="role-icon" aria-hidden="true">📊</span>
+          <span class="role-title">Admin</span>
+          <span class="role-sub">Reporting & oversight.</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="login-form" aria-labelledby="signin-heading" hidden>
+      <h2 id="signin-heading">Sign in</h2>
+      <form id="login">
+        <label>
+          Username
+          <input id="username" name="username" autocomplete="username" required />
+        </label>
+        <label>
+          PIN
+          <input id="pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password" required />
+        </label>
+        <input type="hidden" id="role" name="role" />
+        <button type="submit" class="primary">Sign in</button>
+        <p id="login-error" class="error" role="alert" hidden></p>
+      </form>
+      <details class="hint">
+        <summary>Demo accounts</summary>
+        <ul>
+          <li>Admin: <code>admin</code> / <code>0000</code></li>
+          <li>Mentor: <code>heather</code> / <code>1234</code></li>
+          <li>Student: <code>arlo</code> / <code>11</code> (theme: space)</li>
+          <li>Student: <code>mia</code> / <code>22</code> (theme: ocean)</li>
+        </ul>
+      </details>
+    </section>
+
+    <footer class="login-footer">
+      <small>Aligned to the Australian Curriculum (ACARA v9.0). Foundation - Year 10.</small>
+    </footer>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/login.js"></script>
+</body>
+</html>
