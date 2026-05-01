@@ -10,14 +10,68 @@
 
 window.LessonPlayer = (function () {
   function $(id) { return document.getElementById(id); }
+
+  // ── Voice selection ───────────────────────────────────────────────────
+  // Browsers load the voice list asynchronously. We pick once it's ready,
+  // preferring an Australian female voice with sensible fallbacks.
+  let cachedVoice = null;
+  function pickVoice() {
+    if (!('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices.length) return null;
+    const tiers = [
+      // 1. Named Australian female voices on common platforms
+      (v) => /en[-_]AU/i.test(v.lang) && /(Catherine|Karen|Olivia|Tina|Jenny|Kylie|Nicole|Joanna|Lee|Female)/i.test(v.name),
+      // 2. Any Australian voice
+      (v) => /en[-_]AU/i.test(v.lang),
+      // 3. British female (closer accent than US)
+      (v) => /en[-_]GB/i.test(v.lang) && /(Sonia|Kate|Hazel|Susan|Libby|Female|Amy|Emma)/i.test(v.name),
+      // 4. Any British voice
+      (v) => /en[-_]GB/i.test(v.lang),
+      // 5. Generic English female
+      (v) => /^en/i.test(v.lang) && /(Samantha|Aria|Jenny|Female|Allison|Ava|Susan|Zira)/i.test(v.name),
+      // 6. Anything English
+      (v) => /^en/i.test(v.lang),
+    ];
+    for (const test of tiers) {
+      const v = voices.find(test);
+      if (v) return v;
+    }
+    return voices[0];
+  }
+  function refreshVoice() { cachedVoice = pickVoice(); }
+  if ('speechSynthesis' in window) {
+    refreshVoice();
+    // Voices populate asynchronously on most browsers.
+    window.speechSynthesis.addEventListener?.('voiceschanged', refreshVoice);
+  }
+
+  function cleanForSpeech(text) {
+    return String(text)
+      // Replace underscored gaps with the spoken word "blank"
+      .replace(/_{2,}/g, ' blank ')
+      // Strip emoji glyphs - they read as nonsense
+      .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ' ')
+      // Tidy whitespace
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
   function speak(text, mute) {
     if (mute) return;
     if (!('speechSynthesis' in window)) return;
     try {
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(String(text).replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ' '));
-      u.rate = 0.95;
-      u.pitch = 1.05;
+      const u = new SpeechSynthesisUtterance(cleanForSpeech(text));
+      const v = cachedVoice || pickVoice();
+      if (v) {
+        u.voice = v;
+        u.lang = v.lang;
+      } else {
+        u.lang = 'en-AU';
+      }
+      u.rate = 0.92;
+      u.pitch = 1.0;
       window.speechSynthesis.speak(u);
     } catch {}
   }

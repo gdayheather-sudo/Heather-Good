@@ -143,21 +143,26 @@ const E1_HFW = {
   teach: {
     intro: 'Some words pop up everywhere. We learn them by sight: the, was, said, you, my.',
     examples: [
-      { show: 'the', label: 'thuh' },
-      { show: 'said', label: 'sed' },
-      { show: 'you', label: 'yoo' },
+      { show: 'the', label: 'Read it: "thuh"' },
+      { show: 'said', label: 'Read it: "sed"' },
+      { show: 'you', label: 'Read it: "yoo"' },
     ],
   },
   items: {
     practice: [
-      { type: 'multiple-choice', prompt: 'Choose the word "said".', options: ['said', 'sad', 'send'], answer: 'said', explain: 'Said is spelled s-a-i-d.' },
-      { type: 'multiple-choice', prompt: 'Fill the gap: "I ___ to the park."', options: ['went', 'win', 'won'], answer: 'went', explain: '"Went" means already gone.' },
+      // Cloze: the answer must fit the meaning of the sentence, so the
+      // student is recognising the word in real reading - not just matching
+      // letters from the prompt.
+      { type: 'multiple-choice', prompt: 'Mum ___ , "Time for bed!"', options: ['said', 'sad', 'send'], answer: 'said', explain: '"Said" means spoke. Mum said the words "Time for bed!"' },
+      { type: 'multiple-choice', prompt: 'I ___ to the park yesterday.', options: ['went', 'win', 'won'], answer: 'went', explain: '"Went" means already gone. Yesterday is in the past.' },
+      { type: 'multiple-choice', prompt: 'This is ___ favourite book.', options: ['my', 'me', 'may'], answer: 'my', explain: '"My" shows it belongs to me.' },
     ],
     retrieval: [
-      { type: 'multiple-choice', prompt: 'Pick "you".', options: ['you', 'yes', 'yet'], answer: 'you', explain: 'You.' },
+      { type: 'multiple-choice', prompt: 'How are ___ today?', options: ['you', 'yes', 'yet'], answer: 'you', explain: '"How are you?" is what we ask people we meet.' },
+      { type: 'multiple-choice', prompt: 'The cat ___ on the mat.', options: ['was', 'we', 'will'], answer: 'was', explain: '"Was" means it happened before now.' },
     ],
     review: [
-      { type: 'multiple-choice', prompt: 'Pick "the".', options: ['this', 'the', 'they'], answer: 'the', explain: 'The.' },
+      { type: 'multiple-choice', prompt: 'I saw ___ dog run past.', options: ['this', 'the', 'they'], answer: 'the', explain: '"The dog" - we use "the" before a noun we know about.' },
     ],
   },
 };
