@@ -19,6 +19,13 @@ window.API = (function () {
     const res = await fetch(path, { ...opts, headers, body: opts.body && typeof opts.body !== 'string' ? JSON.stringify(opts.body) : opts.body });
     const ct = res.headers.get('content-type') || '';
     const data = ct.includes('application/json') ? await res.json() : await res.text();
+    // If the server forgot us (e.g. it restarted and the in-memory session
+    // map was wiped), drop the stale token and bounce to sign-in.
+    if (res.status === 401 && location.pathname !== '/' && !path.endsWith('/api/auth/login')) {
+      setToken(null); setUser(null);
+      location.href = '/';
+      throw Object.assign(new Error('session expired'), { status: 401 });
+    }
     if (!res.ok) throw Object.assign(new Error(data.error || res.statusText), { status: res.status, body: data });
     return data;
   }

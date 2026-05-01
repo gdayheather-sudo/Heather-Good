@@ -16,10 +16,12 @@ const FILES = {
   attempts: path.join(DATA_DIR, 'attempts.json'),
   schedule: path.join(DATA_DIR, 'schedule.json'),
   audit: path.join(DATA_DIR, 'audit.json'),
+  sessions: path.join(DATA_DIR, 'sessions.json'),
 };
 
 const cache = {};
 const sessions = new Map();
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 function load(file, fallback) {
   if (!fs.existsSync(file)) return fallback;
@@ -41,6 +43,15 @@ function init() {
   cache.attempts = load(FILES.attempts, []);
   cache.schedule = load(FILES.schedule, {});
   cache.audit = load(FILES.audit, []);
+
+  // Restore sessions across restarts so a `npm start` doesn't 401 everyone.
+  const persisted = load(FILES.sessions, {});
+  const now = Date.now();
+  for (const [token, data] of Object.entries(persisted)) {
+    if (data && data.expiresAt && data.expiresAt > now) {
+      sessions.set(token, data.session);
+    }
+  }
 
   if (!cache.users) {
     cache.users = seedUsers();
@@ -119,10 +130,19 @@ function seedStudents(users) {
     }));
 }
 
-// ── Sessions (in-memory, MVP) ─────────────────────────────────────────────
+// ── Sessions (persisted to disk so restarts don't kick users out) ────────
+function persistSessions() {
+  const out = {};
+  const now = Date.now();
+  for (const [token, session] of sessions.entries()) {
+    out[token] = { session, expiresAt: now + SESSION_TTL_MS };
+  }
+  fs.writeFileSync(FILES.sessions, JSON.stringify(out));
+}
 function createSession(user) {
   const token = crypto.randomBytes(24).toString('hex');
   sessions.set(token, { userId: user.id, role: user.role, orgId: user.orgId });
+  persistSessions();
   return token;
 }
 function getSession(token) {
@@ -130,6 +150,7 @@ function getSession(token) {
 }
 function endSession(token) {
   sessions.delete(token);
+  persistSessions();
 }
 
 // ── User helpers ──────────────────────────────────────────────────────────
