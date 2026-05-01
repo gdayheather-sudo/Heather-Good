@@ -46,8 +46,38 @@ window.LessonPlayer = (function () {
     window.speechSynthesis.addEventListener?.('voiceschanged', refreshVoice);
   }
 
-  function cleanForSpeech(text) {
+  // ── Phonetic preprocessor ────────────────────────────────────────────
+  // TTS engines read "sh" as "ess aitch", "ch" as "see aitch", etc.
+  // For phonics work that's wrong - we want the digraph SOUND. We rewrite
+  // standalone phonic tokens to letter sequences that nudge the engine
+  // toward the right phoneme. Content can also set a `say` field on a
+  // teach example or item to bypass this entirely.
+  const PHONIC_SAY = {
+    sh: 'shh',  ch: 'chuh',  th: 'thh',  ph: 'fff',  wh: 'wuh',
+    ng: 'ng',   ck: 'kuh',   qu: 'kwuh',
+    a: 'aaa',   e: 'eh',     i: 'ih',    o: 'awe',   u: 'uh',
+    b: 'buh',   c: 'kuh',    d: 'duh',   f: 'fff',   g: 'guh',
+    h: 'huh',   j: 'juh',    k: 'kuh',   l: 'lll',   m: 'mmm',
+    n: 'nnn',   p: 'puh',    r: 'ruh',   s: 'sss',   t: 'tuh',
+    v: 'vvv',   w: 'wuh',    x: 'ks',    y: 'yuh',   z: 'zzz',
+  };
+  function phoneticise(text) {
+    // Match a single letter or digraph sitting between word boundaries that's
+    // either quoted ("sh"), preceded by a colon, or in a "blend" hyphen list.
     return String(text)
+      // "Blend these sounds: c - a - t" -> phoneticise each token
+      .replace(/(\b[a-z]{1,3}\b)(\s*-\s*\b[a-z]{1,3}\b)+/gi, (run) =>
+        run.split(/\s*-\s*/).map((tok) => PHONIC_SAY[tok.toLowerCase()] || tok).join(', ')
+      )
+      // Quoted phonic tokens: "sh", "ch", 'th'
+      .replace(/(["'])([a-z]{1,3})\1/gi, (_, q, tok) => PHONIC_SAY[tok.toLowerCase()] ? PHONIC_SAY[tok.toLowerCase()] : tok)
+      // Comma-list of digraphs: "sh, ch, th" anywhere in the sentence
+      .replace(/\b((?:sh|ch|th|ph|wh|ng|ck|qu)(?:\s*,\s*(?:sh|ch|th|ph|wh|ng|ck|qu))+)\b/gi,
+        (run) => run.split(/\s*,\s*/).map((t) => PHONIC_SAY[t.toLowerCase()]).join(', '));
+  }
+
+  function cleanForSpeech(text) {
+    return phoneticise(String(text))
       // Replace underscored gaps with the spoken word "blank"
       .replace(/_{2,}/g, ' blank ')
       // Strip emoji glyphs - they read as nonsense
@@ -72,8 +102,88 @@ window.LessonPlayer = (function () {
       }
       u.rate = 0.92;
       u.pitch = 1.0;
+      // Spell out individual letters or digraphs slower so the phoneme is clear.
+      if (cleanForSpeech(text).length <= 6) u.rate = 0.78;
       window.speechSynthesis.speak(u);
     } catch {}
+  }
+
+  // ── Speak / Record buttons ───────────────────────────────────────────
+  // makeSpeakButton: a small 🔊 that re-reads a specific line.
+  function makeSpeakButton(text) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'mini-btn speak-btn';
+    b.title = 'Read aloud';
+    b.setAttribute('aria-label', 'Read aloud');
+    b.innerHTML = '<span aria-hidden="true">🔊</span><span class="mini-label">Listen</span>';
+    b.onclick = (ev) => { ev.preventDefault(); speak(text, false); };
+    return b;
+  }
+
+  // makeRecordButton: 🎤 records the student's voice for up to 8s and plays
+  // it back so they can hear how they sounded out the word/sound. Audio is
+  // held in a blob URL and discarded when the lesson moves on.
+  function makeRecordButton() {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'mini-btn rec-btn';
+    b.title = 'Record yourself';
+    b.setAttribute('aria-label', 'Record yourself');
+    b.innerHTML = '<span aria-hidden="true">🎤</span><span class="mini-label">Record</span>';
+    let recorder = null;
+    let stream = null;
+    let chunks = [];
+    let audioEl = null;
+    let recTimer = null;
+    let lastUrl = null;
+
+    async function startRec() {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        alert('Recording isn\'t supported on this browser.');
+        return;
+      }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (err) {
+        alert('Please allow microphone access to record yourself.');
+        return;
+      }
+      chunks = [];
+      try { recorder = new MediaRecorder(stream); }
+      catch { recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' }); }
+      recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+        if (lastUrl) URL.revokeObjectURL(lastUrl);
+        lastUrl = URL.createObjectURL(blob);
+        if (!audioEl) {
+          audioEl = document.createElement('audio');
+          audioEl.controls = true;
+          audioEl.className = 'rec-playback';
+          b.parentElement?.appendChild(audioEl);
+        }
+        audioEl.src = lastUrl;
+        audioEl.play().catch(() => {});
+        b.classList.remove('recording');
+        b.querySelector('.mini-label').textContent = 'Re-record';
+      };
+      recorder.start();
+      b.classList.add('recording');
+      b.querySelector('.mini-label').textContent = 'Stop';
+      recTimer = setTimeout(stopRec, 8000);
+    }
+    function stopRec() {
+      if (recTimer) { clearTimeout(recTimer); recTimer = null; }
+      if (recorder && recorder.state === 'recording') recorder.stop();
+    }
+    b.onclick = (ev) => {
+      ev.preventDefault();
+      if (recorder && recorder.state === 'recording') stopRec();
+      else startRec();
+    };
+    return b;
   }
 
   function start(plan, opts) {
@@ -108,11 +218,29 @@ window.LessonPlayer = (function () {
         (t.examples || []).forEach((e) => {
           const div = document.createElement('div');
           div.className = 'example';
-          div.innerHTML = `<div class="show">${e.show}</div><div class="label">${e.label}</div>`;
+          // Build with DOM so we can append a record button safely.
+          const show = document.createElement('div');
+          show.className = 'show';
+          show.textContent = e.show;
+          const label = document.createElement('div');
+          label.className = 'label';
+          label.textContent = e.label;
+          const actions = document.createElement('div');
+          actions.className = 'example-actions';
+          const speakBtn = makeSpeakButton(e.say || `${e.show}. ${e.label}`);
+          const recBtn = makeRecordButton('Record yourself');
+          actions.appendChild(speakBtn);
+          actions.appendChild(recBtn);
+          div.append(show, label, actions);
           ex.appendChild(div);
         });
-        if (settings.readAloud) speak(t.intro, settings.muteSpeech);
-        $('teach-replay').onclick = () => speak(`${t.intro}. ${(t.examples || []).map((e) => e.label).join('. ')}`, settings.muteSpeech);
+        // Auto-read on entry uses the explicit say if provided.
+        if (settings.readAloud) speak(t.say || t.intro, settings.muteSpeech);
+        $('teach-replay').onclick = () => {
+          const intro = t.say || t.intro;
+          const ex = (t.examples || []).map((e) => e.say || `${e.show}, ${e.label}`).join('. ');
+          speak(`${intro}. ${ex}`, settings.muteSpeech);
+        };
         $('teach-next').onclick = () => { $('phase-teach').hidden = true; nextItem(); };
       }
 
@@ -123,8 +251,17 @@ window.LessonPlayer = (function () {
         $('phase-item').hidden = false;
         $('feedback').hidden = true;
         $('feedback').classList.remove('good', 'bad');
-        $('item-prompt').textContent = it.prompt;
-        if (settings.readAloud) speak(it.prompt, settings.muteSpeech);
+        // Render prompt + small toolbar (speak / record yourself).
+        $('item-prompt').innerHTML = '';
+        const promptText = document.createElement('span');
+        promptText.textContent = it.prompt;
+        $('item-prompt').appendChild(promptText);
+        const tools = document.createElement('span');
+        tools.className = 'prompt-tools';
+        tools.appendChild(makeSpeakButton(it.say || it.prompt));
+        tools.appendChild(makeRecordButton('Record yourself'));
+        $('item-prompt').appendChild(tools);
+        if (settings.readAloud) speak(it.say || it.prompt, settings.muteSpeech);
 
         if (it.isInterleaved) {
           $('lesson-title').textContent = '🔁 Quick mix-up!';
@@ -302,6 +439,16 @@ window.LessonPlayer = (function () {
         $('feedback-icon').textContent = correct ? '🎉' : '🤔';
         const lead = correct ? 'You got it!' : 'Not quite.';
         $('feedback-text').textContent = `${lead} ${explain}`;
+        // Always offer a "Listen again" alongside the feedback so a learner
+        // who missed the explanation can re-hear it without a setting toggle.
+        const fbActions = node.querySelector('.feedback-actions') || (() => {
+          const w = document.createElement('div');
+          w.className = 'feedback-actions';
+          $('feedback-text').after(w);
+          return w;
+        })();
+        fbActions.innerHTML = '';
+        fbActions.appendChild(makeSpeakButton(`${lead}. ${explain}`));
         if (settings.readAloud) speak(`${lead}. ${explain}`, settings.muteSpeech);
         $('feedback-next').onclick = () => {
           i += 1; updateBar(); nextItem();

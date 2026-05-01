@@ -86,7 +86,11 @@
     try { return JSON.parse(localStorage.getItem('btp_settings')) || defaults(); }
     catch { return defaults(); }
   }
-  function defaults() { return { theme: 'space', readAloud: false, largeText: false, highContrast: false, reduceMotion: false, muteSpeech: false }; }
+  // Read-aloud is ON by default - early learners benefit from voice + text
+  // every time. Auto-read fires on prompt entry, the per-prompt 🔊 button
+  // gives "Read again" on demand. A learner who finds it overstimulating
+  // can switch it off in Settings.
+  function defaults() { return { theme: 'space', readAloud: true, largeText: false, highContrast: false, reduceMotion: false, muteSpeech: false }; }
   function saveSettings(s) { localStorage.setItem('btp_settings', JSON.stringify(s)); applySettings(s); }
   function applySettings(s) {
     document.body.classList.remove('theme-space', 'theme-ocean', 'theme-dogs', 'theme-art', 'theme-default');

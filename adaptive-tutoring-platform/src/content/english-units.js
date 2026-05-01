@@ -18,22 +18,23 @@ const E_F_PHONICS = {
   prerequisites: [],
   teach: {
     intro: 'Letters make sounds. Sounds blend to make words.',
+    say: 'Letters make sounds. Sounds blend to make words. Listen: sss like in snake. aaa like in apple. tuh like in tap.',
     examples: [
-      { show: 's', label: 'sssss (snake)' },
-      { show: 'a', label: 'aaaa (apple)' },
-      { show: 't', label: 't (tap)' },
+      { show: 's', say: 'sss, like in snake', label: 'sssss (snake)' },
+      { show: 'a', say: 'aaa, like in apple', label: 'aaaa (apple)' },
+      { show: 't', say: 'tuh, like in tap',   label: 't (tap)' },
     ],
   },
   items: {
     practice: [
-      { type: 'multiple-choice', prompt: 'Which letter says "mmmm"?', options: ['m', 's', 'p'], answer: 'm', explain: 'M says "mmmm" like in moon.' },
-      { type: 'multiple-choice', prompt: 'Which starts with "ssss"?', options: ['cat', 'sun', 'dog'], answer: 'sun', explain: 'Sun starts with the s sound.' },
+      { type: 'multiple-choice', prompt: 'Which letter says "mmmm"?', say: 'Which letter makes the mmm sound?', options: ['m', 's', 'p'], answer: 'm', explain: 'The letter m makes the mmm sound, like in moon.' },
+      { type: 'multiple-choice', prompt: 'Which starts with "ssss"?', say: 'Which word starts with the sss sound?', options: ['cat', 'sun', 'dog'], answer: 'sun', explain: 'Sun starts with the sss sound.' },
     ],
     retrieval: [
-      { type: 'multiple-choice', prompt: 'Which letter says "t"?', options: ['t', 'd', 'p'], answer: 't', explain: 'T says t.' },
+      { type: 'multiple-choice', prompt: 'Which letter says "t"?', say: 'Which letter makes the tuh sound?', options: ['t', 'd', 'p'], answer: 't', explain: 'The letter t makes the tuh sound.' },
     ],
     review: [
-      { type: 'multiple-choice', prompt: 'Which starts with "a"?', options: ['ant', 'bat'], answer: 'ant', explain: 'Ant starts with the a sound.' },
+      { type: 'multiple-choice', prompt: 'Which starts with "a"?', say: 'Which word starts with the aaa sound?', options: ['ant', 'bat'], answer: 'ant', explain: 'Ant starts with the aaa sound.' },
     ],
   },
 };
@@ -49,23 +50,24 @@ const E1_BLEND = {
   prerequisites: ['AC9EFLY03'],
   teach: {
     intro: 'Blend the sounds together: c-a-t says "cat".',
+    say: 'Blend the sounds together. Listen: kuh, aaa, tuh, says cat.',
     examples: [
-      { show: 'd-o-g', label: 'dog' },
-      { show: 'p-i-g', label: 'pig' },
-      { show: 's-u-n', label: 'sun' },
+      { show: 'd-o-g', say: 'duh, awe, guh, says dog', label: 'dog' },
+      { show: 'p-i-g', say: 'puh, ih, guh, says pig',   label: 'pig' },
+      { show: 's-u-n', say: 'sss, uh, nnn, says sun',   label: 'sun' },
     ],
   },
   items: {
     practice: [
-      { type: 'blend', prompt: 'Blend these sounds: c - a - t', options: ['cat', 'cap', 'can'], answer: 'cat', explain: 'c-a-t blends to "cat".' },
-      { type: 'blend', prompt: 'Blend these sounds: m - a - p', options: ['mat', 'man', 'map'], answer: 'map', explain: 'm-a-p makes "map".' },
+      { type: 'blend', prompt: 'Blend these sounds: c - a - t', say: 'Blend these sounds: kuh, aaa, tuh',  options: ['cat', 'cap', 'can'], answer: 'cat', explain: 'kuh, aaa, tuh blends to cat.' },
+      { type: 'blend', prompt: 'Blend these sounds: m - a - p', say: 'Blend these sounds: mmm, aaa, puh',  options: ['mat', 'man', 'map'], answer: 'map', explain: 'mmm, aaa, puh makes map.' },
     ],
     retrieval: [
-      { type: 'blend', prompt: 'Blend: h - o - p', options: ['hot', 'hop', 'hip'], answer: 'hop', explain: 'h-o-p says "hop".' },
-      { type: 'multiple-choice', prompt: 'Which word has the same first sound as "fish"?', options: ['fox', 'sun', 'cat'], answer: 'fox', explain: '"Fox" and "fish" start with f.' },
+      { type: 'blend', prompt: 'Blend: h - o - p', say: 'Blend these sounds: huh, awe, puh', options: ['hot', 'hop', 'hip'], answer: 'hop', explain: 'huh, awe, puh says hop.' },
+      { type: 'multiple-choice', prompt: 'Which word has the same first sound as "fish"?', say: 'Which word has the same first sound as fish?', options: ['fox', 'sun', 'cat'], answer: 'fox', explain: 'Fox and fish both start with the fff sound.' },
     ],
     review: [
-      { type: 'blend', prompt: 'Blend: b - i - g', options: ['bag', 'big', 'bog'], answer: 'big', explain: 'b-i-g makes "big".' },
+      { type: 'blend', prompt: 'Blend: b - i - g', say: 'Blend these sounds: buh, ih, guh', options: ['bag', 'big', 'bog'], answer: 'big', explain: 'buh, ih, guh makes big.' },
     ],
   },
 };
@@ -81,22 +83,25 @@ const E1_DIGRAPHS = {
   prerequisites: ['AC9E1LY02'],
   teach: {
     intro: 'Two letters can team up to make one sound: sh, ch, th.',
+    // `say` overrides what the read-aloud voice speaks, so it pronounces the
+    // digraph as a sound rather than spelling out each letter.
+    say: 'Two letters can team up to make one sound. Listen: shhh as in shop. ch as in chip. thhh as in this.',
     examples: [
-      { show: 'sh', label: 'shop, ship' },
-      { show: 'ch', label: 'chip, chop' },
-      { show: 'th', label: 'this, that' },
+      { show: 'sh', say: 'shhh, as in shop and ship', label: 'shop, ship' },
+      { show: 'ch', say: 'ch, as in chip and chop',   label: 'chip, chop' },
+      { show: 'th', say: 'thhh, as in this and that', label: 'this, that' },
     ],
   },
   items: {
     practice: [
-      { type: 'multiple-choice', prompt: 'Which word starts with "sh"?', options: ['ship', 'chip', 'tip'], answer: 'ship', explain: 'Ship starts with sh.' },
-      { type: 'multiple-choice', prompt: 'Which word ends with "ch"?', options: ['fish', 'rich', 'wish'], answer: 'rich', explain: 'Rich ends with ch.' },
+      { type: 'multiple-choice', prompt: 'Which word starts with "sh"?', say: 'Which word starts with the shhh sound?', options: ['ship', 'chip', 'tip'], answer: 'ship', explain: 'Ship starts with the shhh sound.' },
+      { type: 'multiple-choice', prompt: 'Which word ends with "ch"?', say: 'Which word ends with the ch sound?', options: ['fish', 'rich', 'wish'], answer: 'rich', explain: 'Rich ends with the ch sound.' },
     ],
     retrieval: [
-      { type: 'multiple-choice', prompt: 'Which word starts with "th"?', options: ['then', 'pen', 'sent'], answer: 'then', explain: '"Then" starts with th.' },
+      { type: 'multiple-choice', prompt: 'Which word starts with "th"?', say: 'Which word starts with the thhh sound?', options: ['then', 'pen', 'sent'], answer: 'then', explain: '"Then" starts with the thhh sound.' },
     ],
     review: [
-      { type: 'multiple-choice', prompt: 'Which has the "sh" sound?', options: ['shoe', 'see'], answer: 'shoe', explain: 'Shoe has sh.' },
+      { type: 'multiple-choice', prompt: 'Which has the "sh" sound?', say: 'Which word has the shhh sound?', options: ['shoe', 'see'], answer: 'shoe', explain: 'Shoe has the shhh sound.' },
     ],
   },
 };
