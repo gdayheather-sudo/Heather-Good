@@ -48,10 +48,10 @@
   $('settings-btn').onclick = () => { $('settings').hidden = false; bindSettings(); };
   $('settings-close').onclick = () => { $('settings').hidden = true; };
 
+  // Top-bar 🔊/🔇 toggles the global mute. Auto-read on every slide is
+  // always on; this just silences it for learners who prefer no audio.
   $('read-aloud').onclick = () => {
-    settings.readAloud = !settings.readAloud;
-    $('read-aloud').setAttribute('aria-pressed', String(settings.readAloud));
-    $('read-aloud').classList.toggle('primary', settings.readAloud);
+    settings.muteSpeech = !settings.muteSpeech;
     saveSettings(settings);
   };
 
@@ -82,15 +82,18 @@
   }
 
   // ── Settings ──────────────────────────────────────────────────────────
+  // Auto-read every slide is now hard-wired on. The only thing the user
+  // controls is whether sound is muted globally (top-bar 🔊/🔇 toggle).
   function loadSettings() {
-    try { return JSON.parse(localStorage.getItem('btp_settings')) || defaults(); }
-    catch { return defaults(); }
+    let s;
+    try { s = JSON.parse(localStorage.getItem('btp_settings')) || defaults(); }
+    catch { s = defaults(); }
+    // Migrate older settings that had `readAloud:false` from the v1 default,
+    // which no longer means anything. Don't carry that forward as muted.
+    if ('readAloud' in s) delete s.readAloud;
+    return s;
   }
-  // Read-aloud is ON by default - early learners benefit from voice + text
-  // every time. Auto-read fires on prompt entry, the per-prompt 🔊 button
-  // gives "Read again" on demand. A learner who finds it overstimulating
-  // can switch it off in Settings.
-  function defaults() { return { theme: 'space', readAloud: true, largeText: false, highContrast: false, reduceMotion: false, muteSpeech: false }; }
+  function defaults() { return { theme: 'space', largeText: false, highContrast: false, reduceMotion: false, muteSpeech: false }; }
   function saveSettings(s) { localStorage.setItem('btp_settings', JSON.stringify(s)); applySettings(s); }
   function applySettings(s) {
     document.body.classList.remove('theme-space', 'theme-ocean', 'theme-dogs', 'theme-art', 'theme-default');
@@ -98,9 +101,13 @@
     document.body.classList.toggle('acc-large-text', !!s.largeText);
     document.body.classList.toggle('acc-high-contrast', !!s.highContrast);
     document.body.classList.toggle('acc-reduce-motion', !!s.reduceMotion);
-    if ($('read-aloud')) {
-      $('read-aloud').setAttribute('aria-pressed', String(!!s.readAloud));
-      $('read-aloud').classList.toggle('primary', !!s.readAloud);
+    const btn = $('read-aloud');
+    if (btn) {
+      const muted = !!s.muteSpeech;
+      btn.setAttribute('aria-pressed', String(!muted));
+      btn.classList.toggle('primary', !muted);
+      btn.title = muted ? 'Sound is off - tap to turn on' : 'Sound is on - tap to mute';
+      btn.innerHTML = muted ? '🔇 Sound off' : '🔊 Sound on';
     }
   }
   function bindSettings() {

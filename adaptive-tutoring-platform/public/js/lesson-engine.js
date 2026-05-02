@@ -208,6 +208,17 @@ window.LessonPlayer = (function () {
         nextItem();
       }
 
+      function shouldShowRecord(it) {
+        // Recording helps when the student is meant to say a word/sound
+        // aloud. Skip it for typed answers, dot-tapping, ordering, or
+        // anything in the maths subject - it's just clutter there.
+        if (!it) return plan.subject === 'english';
+        if (it.record === false) return false;
+        if (it.record === true) return true;
+        if (['numeric', 'tap-count', 'order'].includes(it.type)) return false;
+        return plan.subject === 'english';
+      }
+
       function showTeach(t) {
         $('phase-teach').hidden = false;
         $('phase-item').hidden = true;
@@ -215,6 +226,7 @@ window.LessonPlayer = (function () {
         $('teach-intro').textContent = t.intro || 'Let\'s learn!';
         const ex = $('teach-examples');
         ex.innerHTML = '';
+        const showRecExamples = plan.subject === 'english';
         (t.examples || []).forEach((e) => {
           const div = document.createElement('div');
           div.className = 'example';
@@ -227,15 +239,16 @@ window.LessonPlayer = (function () {
           label.textContent = e.label;
           const actions = document.createElement('div');
           actions.className = 'example-actions';
-          const speakBtn = makeSpeakButton(e.say || `${e.show}. ${e.label}`);
-          const recBtn = makeRecordButton('Record yourself');
-          actions.appendChild(speakBtn);
-          actions.appendChild(recBtn);
+          actions.appendChild(makeSpeakButton(e.say || `${e.show}. ${e.label}`));
+          if (showRecExamples) actions.appendChild(makeRecordButton());
           div.append(show, label, actions);
           ex.appendChild(div);
         });
-        // Auto-read on entry uses the explicit say if provided.
-        if (settings.readAloud) speak(t.say || t.intro, settings.muteSpeech);
+        // Auto-read every teach screen on entry. Mute via the top-bar
+        // sound toggle (settings.muteSpeech). The legacy `readAloud`
+        // flag is no longer consulted here so the experience is
+        // consistent for early learners.
+        speak(t.say || t.intro, settings.muteSpeech);
         $('teach-replay').onclick = () => {
           const intro = t.say || t.intro;
           const ex = (t.examples || []).map((e) => e.say || `${e.show}, ${e.label}`).join('. ');
@@ -251,7 +264,7 @@ window.LessonPlayer = (function () {
         $('phase-item').hidden = false;
         $('feedback').hidden = true;
         $('feedback').classList.remove('good', 'bad');
-        // Render prompt + small toolbar (speak / record yourself).
+        // Render prompt + small toolbar (speak / optionally record).
         $('item-prompt').innerHTML = '';
         const promptText = document.createElement('span');
         promptText.textContent = it.prompt;
@@ -259,9 +272,10 @@ window.LessonPlayer = (function () {
         const tools = document.createElement('span');
         tools.className = 'prompt-tools';
         tools.appendChild(makeSpeakButton(it.say || it.prompt));
-        tools.appendChild(makeRecordButton('Record yourself'));
+        if (shouldShowRecord(it)) tools.appendChild(makeRecordButton());
         $('item-prompt').appendChild(tools);
-        if (settings.readAloud) speak(it.say || it.prompt, settings.muteSpeech);
+        // Auto-read every new slide. Muted only by the global sound toggle.
+        speak(it.say || it.prompt, settings.muteSpeech);
 
         if (it.isInterleaved) {
           $('lesson-title').textContent = '🔁 Quick mix-up!';
@@ -449,7 +463,8 @@ window.LessonPlayer = (function () {
         })();
         fbActions.innerHTML = '';
         fbActions.appendChild(makeSpeakButton(`${lead}. ${explain}`));
-        if (settings.readAloud) speak(`${lead}. ${explain}`, settings.muteSpeech);
+        // Auto-read every feedback message; learners can mute globally.
+        speak(`${lead}. ${explain}`, settings.muteSpeech);
         $('feedback-next').onclick = () => {
           i += 1; updateBar(); nextItem();
         };
@@ -472,7 +487,7 @@ window.LessonPlayer = (function () {
         $('phase-done').hidden = false;
         const acc = Math.round((correctCount / total) * 100);
         $('done-summary').textContent = `You answered ${correctCount} of ${total} (${acc}%). Lesson took ${Math.round((Date.now() - startedAt) / 1000)} seconds.`;
-        if (settings.readAloud) speak('You did it. Great work today.', settings.muteSpeech);
+        speak('You did it. Great work today.', settings.muteSpeech);
         $('done-again').onclick = () => resolve({ done: 'again', stats });
         $('done-home').onclick = () => resolve({ done: 'home', stats });
       }
