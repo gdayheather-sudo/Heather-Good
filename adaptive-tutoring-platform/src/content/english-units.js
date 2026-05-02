@@ -29,15 +29,18 @@ const E_F_PHONICS = {
     ],
   },
   items: {
+    // Picture-based prompts: the answer letter is NOT shown in the
+    // prompt text. The student must recognise the picture, know how
+    // the word starts, and pick the matching letter.
     practice: [
-      { type: 'multiple-choice', prompt: 'Which letter says "mmmm"?', say: 'Which letter makes the mmm sound?', options: ['m', 's', 'p'], answer: 'm', explain: 'The letter m makes the mmm sound, like in moon.' },
-      { type: 'multiple-choice', prompt: 'Which starts with "ssss"?', say: 'Which word starts with the sss sound?', options: ['cat', 'sun', 'dog'], answer: 'sun', explain: 'Sun starts with the sss sound.' },
+      { type: 'multiple-choice', prompt: 'Which letter is at the start of this word?', picture: '🌙', say: 'Which letter is at the start of the word moon?', options: ['m', 's', 'p'], answer: 'm', explain: 'Moon starts with the letter m.' },
+      { type: 'multiple-choice', prompt: 'Which word starts with the same first sound?', picture: '☀️', say: 'Which word starts with the same first sound as sun?', options: ['cat', 'sock', 'dog'], answer: 'sock', explain: 'Sun and sock both start with the letter s.' },
     ],
     retrieval: [
-      { type: 'multiple-choice', prompt: 'Which letter says "t"?', say: 'Which letter makes the tuh sound?', options: ['t', 'd', 'p'], answer: 't', explain: 'The letter t makes the tuh sound.' },
+      { type: 'multiple-choice', prompt: 'Which letter is at the start of this word?', picture: '🐅', say: 'Which letter is at the start of the word tiger?', options: ['t', 'd', 'p'], answer: 't', explain: 'Tiger starts with the letter t.' },
     ],
     review: [
-      { type: 'multiple-choice', prompt: 'Which starts with "a"?', say: 'Which word starts with the aaa sound?', options: ['ant', 'bat'], answer: 'ant', explain: 'Ant starts with the aaa sound.' },
+      { type: 'multiple-choice', prompt: 'Which word starts with the same first sound?', picture: '🍎', say: 'Which word starts with the same first sound as apple?', options: ['ant', 'bat'], answer: 'ant', explain: 'Apple and ant both start with the letter a.' },
     ],
   },
 };

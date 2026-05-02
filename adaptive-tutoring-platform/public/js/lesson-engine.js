@@ -11,6 +11,38 @@
 window.LessonPlayer = (function () {
   function $(id) { return document.getElementById(id); }
 
+  // ── Feedback phrase pools ────────────────────────────────────────────
+  // Calm, varied, age-appropriate. Picked at random per item so a learner
+  // doesn't hear the same phrase twice in a row.
+  const POSITIVE = [
+    "You got it!", "Nice work!", "Yes!", "Spot on!", "Awesome!",
+    "Great job!", "Well done!", "That's it!", "Brilliant!", "Perfect!",
+    "Top effort!", "Beautiful!", "You're on fire!", "Lovely thinking!",
+  ];
+  const ENCOURAGING = [
+    "Not quite.", "Close - have another look.", "Almost!",
+    "Tricky one - let's see why.", "Good try - here's the trick.",
+    "Nearly there.", "No worries - let's check.", "Keep going - here's why.",
+  ];
+  let lastPhrase = null;
+  function pickPhrase(pool) {
+    if (!pool || !pool.length) return '';
+    let p = pool[Math.floor(Math.random() * pool.length)];
+    if (p === lastPhrase && pool.length > 1) p = pool[(pool.indexOf(p) + 1) % pool.length];
+    lastPhrase = p;
+    return p;
+  }
+
+  // End-of-lesson summary - tone matches accuracy. Below ~50% the message
+  // is supportive ("good try, more learning to do, we'll get there"); at
+  // 50-79% it's positive but realistic; at 80%+ it's a celebration.
+  function endOfLessonMessage(correct, total) {
+    const pct = total ? correct / total : 0;
+    if (pct >= 0.8) return { icon: '🎉', headline: 'You did it!',     body: `You got ${correct} out of ${total}. That's terrific work.` };
+    if (pct >= 0.5) return { icon: '🌱', headline: 'Nice work!',      body: `You got ${correct} out of ${total}. You're growing every lesson.` };
+    return                  { icon: '💪', headline: 'Good try!',      body: `You got ${correct} out of ${total}. We have a little more learning to do, but we will get there together.` };
+  }
+
   // ── Voice selection ───────────────────────────────────────────────────
   // Browsers load the voice list asynchronously. We pick once it's ready,
   // preferring an Australian female voice with sensible fallbacks.
@@ -76,8 +108,23 @@ window.LessonPlayer = (function () {
         (run) => run.split(/\s*,\s*/).map((t) => PHONIC_SAY[t.toLowerCase()]).join(', '));
   }
 
+  // Maths preprocessor: TTS engines read "12 - 5" as the clock time
+  // "twelve to five" because en-AU treats hyphenated numbers as durations.
+  // Spell the operator out so a Year 1 learner hears "twelve take five
+  // equals seven" instead. Only triggers when there are digits on both
+  // sides so plain hyphenated text ("Year 1 - Maths") is untouched.
+  function maths(text) {
+    return String(text)
+      .replace(/(\d+)\s*=\s*(\d+)/g, '$1 equals $2')
+      .replace(/(\d+)\s*=\s*\?/g, '$1 equals what')
+      .replace(/(\d+)\s*-\s*(\d+)/g, '$1 take $2')
+      .replace(/(\d+)\s*\+\s*(\d+)/g, '$1 plus $2')
+      .replace(/(\d+)\s*[×x*]\s*(\d+)/g, '$1 times $2')
+      .replace(/(\d+)\s*[÷/]\s*(\d+)/g, '$1 divided by $2');
+  }
+
   function cleanForSpeech(text) {
-    return phoneticise(String(text))
+    return phoneticise(maths(String(text)))
       // Replace underscored gaps with the spoken word "blank"
       .replace(/_{2,}/g, ' blank ')
       // Strip emoji glyphs - they read as nonsense
@@ -407,6 +454,19 @@ window.LessonPlayer = (function () {
         const promptText = document.createElement('span');
         promptText.textContent = it.prompt;
         $('item-prompt').appendChild(promptText);
+        // Optional picture cue (emoji) - lets us ask "which letter starts
+        // this word?" without revealing the answer in the prompt text.
+        if (it.picture) {
+          const pic = document.createElement('div');
+          pic.className = 'item-picture';
+          pic.textContent = it.picture;
+          pic.setAttribute('aria-hidden', 'true');
+          $('item-prompt').after(pic);
+        } else {
+          // Clear any leftover picture from a previous item.
+          const prev = document.querySelector('.item-picture');
+          if (prev) prev.remove();
+        }
         const tools = document.createElement('span');
         tools.className = 'prompt-tools';
         // For blend items, derive the segment list from the prompt so the
@@ -606,7 +666,7 @@ window.LessonPlayer = (function () {
         node.classList.toggle('good', correct);
         node.classList.toggle('bad', !correct);
         $('feedback-icon').textContent = correct ? '🎉' : '🤔';
-        const lead = correct ? 'You got it!' : 'Not quite.';
+        const lead = pickPhrase(correct ? POSITIVE : ENCOURAGING);
         $('feedback-text').textContent = `${lead} ${explain}`;
         // Always offer a "Listen again" alongside the feedback so a learner
         // who missed the explanation can re-hear it without a setting toggle.
@@ -640,9 +700,13 @@ window.LessonPlayer = (function () {
         stats.correct = correctCount;
         $('phase-item').hidden = true;
         $('phase-done').hidden = false;
-        const acc = Math.round((correctCount / total) * 100);
-        $('done-summary').textContent = `You answered ${correctCount} of ${total} (${acc}%). Lesson took ${Math.round((Date.now() - startedAt) / 1000)} seconds.`;
-        speak('You did it. Great work today.', settings.muteSpeech);
+        // Grade-aware celebration. Low scores get a supportive message
+        // rather than fake confetti.
+        const msg = endOfLessonMessage(correctCount, total);
+        const headlineEl = $('phase-done').querySelector('h2');
+        if (headlineEl) headlineEl.textContent = `${msg.icon} ${msg.headline}`;
+        $('done-summary').textContent = msg.body;
+        speak(`${msg.headline} ${msg.body}`, settings.muteSpeech);
         $('done-again').onclick = () => resolve({ done: 'again', stats });
         $('done-home').onclick = () => resolve({ done: 'home', stats });
       }
