@@ -125,8 +125,8 @@ const E1_SENTENCE = {
   teach: {
     intro: 'A sentence starts with a CAPITAL letter and ends with a full stop.',
     examples: [
-      { show: 'The dog runs.', label: 'Capital "T" and full stop "."' },
-      { show: 'Mia plays.', label: 'Capital "M" and full stop "."' },
+      { show: 'The dog runs.', say: 'The dog runs. It starts with a capital letter and ends with a full stop.', label: 'Capital "T" and full stop "."' },
+      { show: 'Mia plays.',    say: 'Mia plays. It starts with a capital letter and ends with a full stop.',    label: 'Capital "M" and full stop "."' },
     ],
   },
   items: {
@@ -154,10 +154,14 @@ const E1_HFW = {
   prerequisites: [],
   teach: {
     intro: 'Some words pop up everywhere. We learn them by sight: the, was, said, you, my.',
+    // The visible "thuh"/"sed"/"yoo" guides help a sighted reader, but
+    // TTS reads them literally and sounds terrible. `say` overrides
+    // make Listen pronounce the actual word instead.
+    say: 'Some words pop up everywhere. We learn them by sight. Listen to these words: the. was. said. you. my.',
     examples: [
-      { show: 'the', label: 'Read it: "thuh"' },
-      { show: 'said', label: 'Read it: "sed"' },
-      { show: 'you', label: 'Read it: "yoo"' },
+      { show: 'the',  say: 'the',  label: 'Sounds like "thuh"' },
+      { show: 'said', say: 'said', label: 'Sounds like "sed"'  },
+      { show: 'you',  say: 'you',  label: 'Sounds like "yoo"'  },
     ],
   },
   items: {
@@ -220,8 +224,8 @@ const E2_COMPOUND = {
   teach: {
     intro: 'We can join two ideas with "and", "but" or "because".',
     examples: [
-      { show: 'I like dogs and I like cats.', label: 'Joined with "and".' },
-      { show: 'I was tired but I kept trying.', label: 'Joined with "but".' },
+      { show: 'I like dogs and I like cats.',  say: 'I like dogs and I like cats. The word and joins the two parts.',  label: 'Joined with "and".' },
+      { show: 'I was tired but I kept trying.', say: 'I was tired but I kept trying. The word but joins the two parts.', label: 'Joined with "but".' },
     ],
   },
   items: {

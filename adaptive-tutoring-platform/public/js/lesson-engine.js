@@ -127,17 +127,84 @@ window.LessonPlayer = (function () {
     return speak(text, mute);
   }
 
+  // Multi-utterance speaker. Each part is { text, rate?, pause? }. Used for
+  // phonics blending: each sound is a separate utterance with explicit
+  // gaps so the learner can hear segmentation clearly. The previous "all
+  // in one comma-separated breath" approach sounded robotic.
+  function speakSequence(parts, mute, opts) {
+    if (mute) return;
+    if (!('speechSynthesis' in window)) return;
+    try { window.speechSynthesis.cancel(); } catch {}
+    let i = 0;
+    function step() {
+      if (i >= parts.length) { opts && opts.onDone && opts.onDone(); return; }
+      const p = parts[i];
+      const u = new SpeechSynthesisUtterance(cleanForSpeech(p.text));
+      const v = cachedVoice || pickVoice();
+      if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-AU'; }
+      u.rate = p.rate ?? 0.78;
+      u.pitch = p.pitch ?? 1.0;
+      u.onstart = () => { opts && opts.onPart && opts.onPart(i, p); };
+      u.onend = () => {
+        i += 1;
+        setTimeout(step, p.pause ?? 350);
+      };
+      window.speechSynthesis.speak(u);
+    }
+    step();
+  }
+
+  // Derive ['d','o','g'] from a hyphenated show like 'd-o-g'.
+  function parseSegments(show) {
+    if (typeof show !== 'string') return null;
+    if (!/^[a-z](?:-[a-z]){1,4}$/i.test(show.trim())) return null;
+    return show.trim().toLowerCase().split('-');
+  }
+
+  // Sound out each segment, then say the whole word. The segment lookup
+  // uses PHONIC_SAY so single letters become their best TTS approximation
+  // ('d' -> 'duh', 'o' -> 'awe'). The word at the end is spoken naturally.
+  function playBlend(segments, word, mute, opts) {
+    const parts = segments.map((s) => ({
+      text: PHONIC_SAY[s.toLowerCase()] || s,
+      rate: 0.7,
+      pause: 450,
+    }));
+    parts.push({ text: word, rate: 0.95, pause: 0 });
+    speakSequence(parts, mute, opts);
+  }
+
+  // While the i-th part of a blend is being spoken, mark that letter on
+  // screen so the learner sees the connection.
+  function highlightSegments(host, idx, total) {
+    if (!host) return;
+    [...host.querySelectorAll('.seg')].forEach((el, k) => {
+      el.classList.toggle('seg-active', k === idx);
+      el.classList.toggle('seg-said', k < idx);
+    });
+    if (idx >= total) {
+      [...host.querySelectorAll('.seg')].forEach((el) => el.classList.remove('seg-active'));
+    }
+  }
+
   // makeSpeakButton: a small 🔊 that re-reads a specific line.
-  // If `audioUrl` is provided, plays that recording instead of the
-  // synthetic voice.
-  function makeSpeakButton(text, audioUrl) {
+  //   - audioUrl: play that recorded file (gold standard)
+  //   - blend:   { segments, word, hostEl? } - sound out each segment as
+  //              a separate TTS utterance, then say the word; if hostEl
+  //              is provided, highlight each letter as it's spoken.
+  function makeSpeakButton(text, audioUrl, blend) {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'mini-btn speak-btn';
-    b.title = 'Read aloud';
-    b.setAttribute('aria-label', 'Read aloud');
-    b.innerHTML = '<span aria-hidden="true">🔊</span><span class="mini-label">Listen</span>';
-    b.onclick = (ev) => { ev.preventDefault(); speakOrPlay(audioUrl, text, false); };
+    b.title = blend ? 'Sound it out' : 'Read aloud';
+    b.setAttribute('aria-label', b.title);
+    b.innerHTML = `<span aria-hidden="true">🔊</span><span class="mini-label">${blend ? 'Sound out' : 'Listen'}</span>`;
+    b.onclick = (ev) => {
+      ev.preventDefault();
+      if (audioUrl) return playAudio(audioUrl);
+      if (blend) return playBlend(blend.segments, blend.word, false, { onPart: blend.onPart });
+      speak(text, false);
+    };
     return b;
   }
 
@@ -250,16 +317,42 @@ window.LessonPlayer = (function () {
         (t.examples || []).forEach((e) => {
           const div = document.createElement('div');
           div.className = 'example';
-          // Build with DOM so we can append a record button safely.
           const show = document.createElement('div');
           show.className = 'show';
-          show.textContent = e.show;
+          // Hyphenated CVC like "d-o-g": render each letter as a span so
+          // we can highlight it while the matching sound is spoken.
+          const segs = parseSegments(e.show);
+          if (segs) {
+            segs.forEach((s, idx) => {
+              const seg = document.createElement('span');
+              seg.className = 'seg';
+              seg.dataset.idx = String(idx);
+              seg.textContent = s;
+              show.appendChild(seg);
+              if (idx < segs.length - 1) {
+                const sep = document.createElement('span');
+                sep.className = 'seg-sep';
+                sep.textContent = '-';
+                show.appendChild(sep);
+              }
+            });
+            show.classList.add('show-segmented');
+          } else {
+            show.textContent = e.show;
+          }
           const label = document.createElement('div');
           label.className = 'label';
           label.textContent = e.label;
           const actions = document.createElement('div');
           actions.className = 'example-actions';
-          actions.appendChild(makeSpeakButton(e.say || `${e.show}. ${e.label}`, e.audio));
+          // Segmented show + a known word -> "Sound out" button that plays
+          // each phoneme as a separate utterance, highlighting each letter.
+          const blendOpts = segs && (e.say || e.label) ? {
+            segments: segs,
+            word: e.say || e.label,
+            onPart: (i) => highlightSegments(show, i, segs.length),
+          } : null;
+          actions.appendChild(makeSpeakButton(e.say || `${e.show}. ${e.label}`, e.audio, blendOpts));
           if (showRecExamples) actions.appendChild(makeRecordButton());
           div.append(show, label, actions);
           ex.appendChild(div);
@@ -267,11 +360,37 @@ window.LessonPlayer = (function () {
         // Auto-read every teach screen on entry. Prefers a recorded
         // audio file if the content provides one; otherwise uses TTS.
         // Muted by the top-bar sound toggle (settings.muteSpeech).
-        speakOrPlay(t.audio, t.say || t.intro, settings.muteSpeech);
+        // If the first example has a blendable segmented show like
+        // "d-o-g", chain a sound-out demonstration after the intro.
+        const firstBlendable = (t.examples || [])
+          .map((e) => ({ e, segs: parseSegments(e.show) }))
+          .find((x) => x.segs);
+        if (t.audio) {
+          playAudio(t.audio);
+        } else if (firstBlendable && !settings.muteSpeech) {
+          speak(t.say || t.intro, settings.muteSpeech);
+          // Wait until the intro finishes before sounding out the example.
+          const introMs = Math.max(2200, (t.say || t.intro || '').length * 55);
+          setTimeout(() => {
+            const exHost = ex.querySelector('.example .show.show-segmented');
+            playBlend(firstBlendable.segs, firstBlendable.e.say || firstBlendable.e.label, settings.muteSpeech, {
+              onPart: (i) => highlightSegments(exHost, i, firstBlendable.segs.length),
+            });
+          }, introMs);
+        } else {
+          speak(t.say || t.intro, settings.muteSpeech);
+        }
         $('teach-replay').onclick = () => {
-          const intro = t.say || t.intro;
-          const ex = (t.examples || []).map((e) => e.say || `${e.show}, ${e.label}`).join('. ');
-          speak(`${intro}. ${ex}`, settings.muteSpeech);
+          if (firstBlendable) {
+            const exHost = ex.querySelector('.example .show.show-segmented');
+            playBlend(firstBlendable.segs, firstBlendable.e.say || firstBlendable.e.label, false, {
+              onPart: (i) => highlightSegments(exHost, i, firstBlendable.segs.length),
+            });
+          } else {
+            const intro = t.say || t.intro;
+            const exTexts = (t.examples || []).map((e) => e.say || `${e.show}, ${e.label}`).join('. ');
+            speak(`${intro}. ${exTexts}`, false);
+          }
         };
         $('teach-next').onclick = () => { $('phase-teach').hidden = true; nextItem(); };
       }
@@ -290,12 +409,28 @@ window.LessonPlayer = (function () {
         $('item-prompt').appendChild(promptText);
         const tools = document.createElement('span');
         tools.className = 'prompt-tools';
-        tools.appendChild(makeSpeakButton(it.say || it.prompt, it.audio));
+        // For blend items, derive the segment list from the prompt so the
+        // Listen button sounds it out (c... a... t... cat) instead of just
+        // reading the surrounding sentence.
+        let blendOpts = null;
+        if (it.type === 'blend') {
+          const m = (it.prompt || '').match(/([a-z])\s*-\s*([a-z])\s*-\s*([a-z])(?:\s*-\s*([a-z]))?/i);
+          if (m) {
+            const segs = m.slice(1).filter(Boolean).map((s) => s.toLowerCase());
+            blendOpts = { segments: segs, word: it.answer };
+          }
+        }
+        tools.appendChild(makeSpeakButton(it.say || it.prompt, it.audio, blendOpts));
         if (shouldShowRecord(it)) tools.appendChild(makeRecordButton());
         $('item-prompt').appendChild(tools);
-        // Auto-read every new slide. Audio file wins over TTS if provided.
-        // Muted only by the global sound toggle.
-        speakOrPlay(it.audio, it.say || it.prompt, settings.muteSpeech);
+        // Auto-read every new slide. For blend items, sound out the
+        // segments after the prompt sentence so the learner hears it.
+        if (blendOpts && !it.audio) {
+          speak(it.say || it.prompt, settings.muteSpeech);
+          setTimeout(() => playBlend(blendOpts.segments, blendOpts.word, settings.muteSpeech), 1600);
+        } else {
+          speakOrPlay(it.audio, it.say || it.prompt, settings.muteSpeech);
+        }
 
         if (it.isInterleaved) {
           $('lesson-title').textContent = '🔁 Quick mix-up!';
