@@ -1,5 +1,7 @@
 node_modules/
 data/*.json
 !data/.gitkeep
+public/audio/tts-cache/
 *.log
 .DS_Store
+.env

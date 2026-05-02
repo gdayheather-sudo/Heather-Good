@@ -78,6 +78,28 @@ window.LessonPlayer = (function () {
     window.speechSynthesis.addEventListener?.('voiceschanged', refreshVoice);
   }
 
+  // ── Cloud TTS (ElevenLabs, optional) ─────────────────────────────────
+  // The server tells us at boot whether ElevenLabs is configured. If it
+  // is, speak() routes through /api/tts which returns a cached MP3 in a
+  // far better voice than the browser's built-in. We keep browser TTS as
+  // the fallback when cloud isn't available or the request fails.
+  let currentAudio = null;
+  let cloudTtsAvailable = false;
+  fetch('/api/config').then((r) => r.json()).then((cfg) => { cloudTtsAvailable = !!cfg.ttsCloud; }).catch(() => {});
+
+  function cloudSpeak(text) {
+    return new Promise((resolve, reject) => {
+      try { window.speechSynthesis.cancel(); } catch {}
+      if (currentAudio) { try { currentAudio.pause(); } catch {} }
+      const url = `/api/tts?text=${encodeURIComponent(text)}`;
+      const a = new Audio(url);
+      currentAudio = a;
+      a.onended = () => resolve();
+      a.onerror = () => reject(new Error('cloud audio error'));
+      a.play().catch(reject);
+    });
+  }
+
   // ── Phonetic preprocessor ────────────────────────────────────────────
   // TTS engines read "sh" as "ess aitch", "ch" as "see aitch", etc.
   // For phonics work that's wrong - we want the digraph SOUND. We rewrite
@@ -136,10 +158,20 @@ window.LessonPlayer = (function () {
 
   function speak(text, mute) {
     if (mute) return;
+    const cleaned = cleanForSpeech(text);
+    // Prefer cloud TTS (ElevenLabs) when available - much better for
+    // phonics work. Fall back to browser TTS on any failure.
+    if (cloudTtsAvailable) {
+      cloudSpeak(cleaned).catch(() => browserSpeak(cleaned));
+      return;
+    }
+    browserSpeak(cleaned);
+  }
+  function browserSpeak(cleaned) {
     if (!('speechSynthesis' in window)) return;
     try {
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(cleanForSpeech(text));
+      const u = new SpeechSynthesisUtterance(cleaned);
       const v = cachedVoice || pickVoice();
       if (v) {
         u.voice = v;
@@ -150,7 +182,7 @@ window.LessonPlayer = (function () {
       u.rate = 0.92;
       u.pitch = 1.0;
       // Spell out individual letters or digraphs slower so the phoneme is clear.
-      if (cleanForSpeech(text).length <= 6) u.rate = 0.78;
+      if (cleaned.length <= 6) u.rate = 0.78;
       window.speechSynthesis.speak(u);
     } catch {}
   }
@@ -159,7 +191,6 @@ window.LessonPlayer = (function () {
   // Play a recorded audio file (real human voice). Used when content
   // provides an `audio` URL - this is the gold standard for phonics
   // because synthetic voices can't produce true phonemes well.
-  let currentAudio = null;
   function playAudio(url) {
     try { window.speechSynthesis.cancel(); } catch {}
     if (currentAudio) { try { currentAudio.pause(); } catch {} }

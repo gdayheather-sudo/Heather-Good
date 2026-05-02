@@ -18,12 +18,16 @@ const path = require('path');
 const fs = require('fs');
 const express = require('express');
 
+// Optional .env loader so ELEVENLABS_API_KEY etc can live in a file.
+try { require('dotenv').config({ path: path.join(__dirname, '.env') }); } catch {}
+
 const store = require('./src/data-store');
 const engine = require('./src/adaptive-engine');
 const profiles = require('./src/profile-system');
 const curriculum = require('./src/curriculum');
 const content = require('./src/content');
 const reports = require('./src/reports');
+const tts = require('./src/tts');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -140,8 +144,30 @@ app.post('/api/baseline/:studentId', authRequired(), (req, res) => {
   res.json(result);
 });
 
+// ── Cloud TTS (ElevenLabs) ────────────────────────────────────────────────
+// /api/config tells the frontend whether cloud TTS is available so it can
+// switch on without a hard refresh.
+app.get('/api/config', (req, res) => {
+  res.json({ ttsCloud: tts.isConfigured() });
+});
+
+// /api/tts?text=...&voice=...  - returns audio/mpeg, cached on disk.
+app.get('/api/tts', async (req, res) => {
+  if (!tts.isConfigured()) return res.status(503).json({ error: 'cloud TTS not configured' });
+  const text = String(req.query.text || '').slice(0, 500);
+  if (!text) return res.status(400).json({ error: 'text required' });
+  try {
+    const { path: file } = await tts.generate(text, { voiceId: req.query.voice });
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+    fs.createReadStream(file).pipe(res);
+  } catch (err) {
+    res.status(502).json({ error: err.message });
+  }
+});
+
 // ── Health ────────────────────────────────────────────────────────────────
-app.get('/api/health', (req, res) => res.json({ ok: true, framework: 'ACARA v9.0' }));
+app.get('/api/health', (req, res) => res.json({ ok: true, framework: 'ACARA v9.0', ttsCloud: tts.isConfigured() }));
 
 // ── Boot ──────────────────────────────────────────────────────────────────
 store.init();

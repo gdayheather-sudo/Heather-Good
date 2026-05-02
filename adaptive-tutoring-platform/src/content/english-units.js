@@ -103,15 +103,20 @@ const E1_DIGRAPHS = {
     ],
   },
   items: {
+    // Picture-based cue words. The visible prompt asks the learner to
+    // listen, the spoken question names the cue word ("shoe", "watch",
+    // "thumb"), and the picture provides a non-text alternative for
+    // students who don't have audio enabled. The answer letter is no
+    // longer visible in the prompt.
     practice: [
-      { type: 'multiple-choice', prompt: 'Which word starts with "sh"?', say: 'Which word starts with the shhh sound?', options: ['ship', 'chip', 'tip'], answer: 'ship', explain: 'Ship starts with the shhh sound.' },
-      { type: 'multiple-choice', prompt: 'Which word ends with "ch"?', say: 'Which word ends with the ch sound?', options: ['fish', 'rich', 'wish'], answer: 'rich', explain: 'Rich ends with the ch sound.' },
+      { type: 'multiple-choice', prompt: 'Listen to the question. Which word starts with the same first sound?', picture: '👟', say: 'Which word starts with the same first sound as shoe?', options: ['ship', 'chip', 'tip'], answer: 'ship', explain: 'Shoe and ship both start with the sh sound.' },
+      { type: 'multiple-choice', prompt: 'Listen to the question. Which word ends with the same sound?',         picture: '⌚', say: 'Which word ends with the same sound as watch?', options: ['fish', 'rich', 'wish'], answer: 'rich', explain: 'Watch and rich both end with the ch sound.' },
     ],
     retrieval: [
-      { type: 'multiple-choice', prompt: 'Which word starts with "th"?', say: 'Which word starts with the thhh sound?', options: ['then', 'pen', 'sent'], answer: 'then', explain: '"Then" starts with the thhh sound.' },
+      { type: 'multiple-choice', prompt: 'Listen to the question. Which word starts with the same first sound?', picture: '👍', say: 'Which word starts with the same first sound as thumb?', options: ['then', 'pen', 'sent'], answer: 'then', explain: 'Thumb and then both start with the th sound.' },
     ],
     review: [
-      { type: 'multiple-choice', prompt: 'Which has the "sh" sound?', say: 'Which word has the shhh sound?', options: ['shoe', 'see'], answer: 'shoe', explain: 'Shoe has the shhh sound.' },
+      { type: 'multiple-choice', prompt: 'Listen to the question. Which word starts with the same first sound?', picture: '🦈', say: 'Which word starts with the same first sound as shark?', options: ['shoe', 'see'], answer: 'shoe', explain: 'Shark and shoe both start with the sh sound.' },
     ],
   },
 };

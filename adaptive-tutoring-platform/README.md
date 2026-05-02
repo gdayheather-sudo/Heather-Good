@@ -193,8 +193,40 @@ The platform handles this with a layered fallback:
    handful of safe cases.
 
 For high-quality recorded audio without recording everything yourself,
-see the **External neural-voice services** section in this repo's docs
-(ElevenLabs, Microsoft Azure, Amazon Polly, Google Cloud TTS).
+the platform ships with optional **ElevenLabs neural TTS** integration.
+Once enabled it dramatically improves phonics audio (digraphs sh/ch/th,
+isolated phonemes) and reads sentences in a near-human voice.
+
+### Enabling ElevenLabs
+
+```bash
+cp .env.example .env
+# edit .env, paste your key:
+# ELEVENLABS_API_KEY=eleven-...
+npm start
+```
+
+That's it. Restart the server and the lesson player automatically
+routes every read-aloud through ElevenLabs. Audio is cached on disk in
+`public/audio/tts-cache/` so each unique line costs at most one API
+call across all learners. Browser TTS remains the fallback when the
+key is missing or a request fails.
+
+#### Voice selection
+
+- Default: **Charlotte** (en-GB female, voice id `XB0fDUnXU5powFXDhCwa`).
+- To use a different voice, browse https://elevenlabs.io/app/voice-library,
+  copy any voice id, and set `ELEVENLABS_VOICE_ID=` in `.env`.
+- To use **your own voice**: paid tier ($5/mo "Starter"). Record 1–10 min
+  of yourself reading, click "Add voice → Instant clone", then paste
+  the resulting voice id into `.env`. Every prompt and feedback line
+  the platform speaks will then be in your voice.
+
+#### Cost
+
+Free tier ships with ~10k chars/month — enough to cover all of Year 1
+phonics with caching. Paid tiers start at $5/mo for ~30k chars and
+include voice cloning.
 
 ## Future expansion (already scaffolded)
 
