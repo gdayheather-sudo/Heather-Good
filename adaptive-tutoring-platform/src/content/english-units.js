@@ -18,11 +18,14 @@ const E_F_PHONICS = {
   prerequisites: [],
   teach: {
     intro: 'Letters make sounds. Sounds blend to make words.',
-    say: 'Letters make sounds. Sounds blend to make words. Listen: sss like in snake. aaa like in apple. tuh like in tap.',
+    // Whole-word `say` values work much better with synthetic voices. For
+    // true phoneme audio (sss, aaa, tuh), drop in recorded audio files
+    // via the `audio` field below.
+    say: 'Letters make sounds. Sounds blend together to make words. Listen to these words: snake, apple, tap.',
     examples: [
-      { show: 's', say: 'sss, like in snake', label: 'sssss (snake)' },
-      { show: 'a', say: 'aaa, like in apple', label: 'aaaa (apple)' },
-      { show: 't', say: 'tuh, like in tap',   label: 't (tap)' },
+      { show: 's', say: 'snake', label: 'sssss (snake)' /* audio: '/audio/sound-s.mp3' */ },
+      { show: 'a', say: 'apple', label: 'aaaa (apple)' },
+      { show: 't', say: 'tap',   label: 't (tap)' },
     ],
   },
   items: {
@@ -50,24 +53,28 @@ const E1_BLEND = {
   prerequisites: ['AC9EFLY03'],
   teach: {
     intro: 'Blend the sounds together: c-a-t says "cat".',
-    say: 'Blend the sounds together. Listen: kuh, aaa, tuh, says cat.',
+    // Synthetic voices can't say isolated phonemes well, so the spoken
+    // narrative uses whole words. The visual "d-o-g" segmentation does
+    // the phonics work on screen. Add an `audio` URL on any example
+    // (e.g. recorded by the mentor) to play that instead of TTS.
+    say: 'When we blend sounds together, they make a word. Listen to these words: dog, pig, sun.',
     examples: [
-      { show: 'd-o-g', say: 'duh, awe, guh, says dog', label: 'dog' },
-      { show: 'p-i-g', say: 'puh, ih, guh, says pig',   label: 'pig' },
-      { show: 's-u-n', say: 'sss, uh, nnn, says sun',   label: 'sun' },
+      { show: 'd-o-g', say: 'dog', label: 'dog' /* audio: '/audio/dog.mp3' */ },
+      { show: 'p-i-g', say: 'pig', label: 'pig' },
+      { show: 's-u-n', say: 'sun', label: 'sun' },
     ],
   },
   items: {
     practice: [
-      { type: 'blend', prompt: 'Blend these sounds: c - a - t', say: 'Blend these sounds: kuh, aaa, tuh',  options: ['cat', 'cap', 'can'], answer: 'cat', explain: 'kuh, aaa, tuh blends to cat.' },
-      { type: 'blend', prompt: 'Blend these sounds: m - a - p', say: 'Blend these sounds: mmm, aaa, puh',  options: ['mat', 'man', 'map'], answer: 'map', explain: 'mmm, aaa, puh makes map.' },
+      { type: 'blend', prompt: 'Blend these sounds: c - a - t', say: 'Which word do these sounds make?', options: ['cat', 'cap', 'can'], answer: 'cat', explain: 'c, a, t blends to make cat.' },
+      { type: 'blend', prompt: 'Blend these sounds: m - a - p', say: 'Which word do these sounds make?', options: ['mat', 'man', 'map'], answer: 'map', explain: 'm, a, p blends to make map.' },
     ],
     retrieval: [
-      { type: 'blend', prompt: 'Blend: h - o - p', say: 'Blend these sounds: huh, awe, puh', options: ['hot', 'hop', 'hip'], answer: 'hop', explain: 'huh, awe, puh says hop.' },
-      { type: 'multiple-choice', prompt: 'Which word has the same first sound as "fish"?', say: 'Which word has the same first sound as fish?', options: ['fox', 'sun', 'cat'], answer: 'fox', explain: 'Fox and fish both start with the fff sound.' },
+      { type: 'blend', prompt: 'Blend: h - o - p', say: 'Which word do these sounds make?', options: ['hot', 'hop', 'hip'], answer: 'hop', explain: 'h, o, p blends to make hop.' },
+      { type: 'multiple-choice', prompt: 'Which word has the same first sound as "fish"?', say: 'Which word starts with the same sound as fish?', options: ['fox', 'sun', 'cat'], answer: 'fox', explain: 'Fox and fish both start with the same sound.' },
     ],
     review: [
-      { type: 'blend', prompt: 'Blend: b - i - g', say: 'Blend these sounds: buh, ih, guh', options: ['bag', 'big', 'bog'], answer: 'big', explain: 'buh, ih, guh makes big.' },
+      { type: 'blend', prompt: 'Blend: b - i - g', say: 'Which word do these sounds make?', options: ['bag', 'big', 'bog'], answer: 'big', explain: 'b, i, g blends to make big.' },
     ],
   },
 };

@@ -169,6 +169,33 @@ mapped curriculum.
 - **Calm feedback** — celebratory but not overstimulating; explanations
   always state *why*.
 
+## Audio: TTS, recorded files, and neural voices
+
+Synthetic browser voices struggle with phonics - they read "sh" as
+"ess aitch" and isolated phonemes like /k/ /a/ /t/ come out robotic.
+The platform handles this with a layered fallback:
+
+1. **`audio` URL on a teach example or item** — if present, plays that
+   recorded file via an `<audio>` element. This is the gold standard.
+   Drop MP3s/WAVs into `public/audio/` and reference them:
+
+   ```js
+   examples: [
+     { show: 'd-o-g', say: 'dog', label: 'dog', audio: '/audio/dog.mp3' },
+   ]
+   ```
+
+2. **`say` field with natural language** — full-word, well-formed
+   sentences that TTS can pronounce well. Avoid isolated phonemes here.
+
+3. **`prompt` / `intro`** — the fallback text used when nothing else is
+   set. The phonetic preprocessor only rewrites quoted digraphs and a
+   handful of safe cases.
+
+For high-quality recorded audio without recording everything yourself,
+see the **External neural-voice services** section in this repo's docs
+(ElevenLabs, Microsoft Azure, Amazon Polly, Google Cloud TTS).
+
 ## Future expansion (already scaffolded)
 
 - `src/curriculum/*` accepts more subjects (Science, HASS, Life skills) by

@@ -62,16 +62,16 @@ window.LessonPlayer = (function () {
     v: 'vvv',   w: 'wuh',    x: 'ks',    y: 'yuh',   z: 'zzz',
   };
   function phoneticise(text) {
-    // Match a single letter or digraph sitting between word boundaries that's
-    // either quoted ("sh"), preceded by a colon, or in a "blend" hyphen list.
+    // The hyphen rewrite (c - a - t -> kuh, aaa, tuh) sounded robotic in
+    // every voice we tried. Content authors should provide a `say` field
+    // with natural language, or - better - an `audio` URL pointing at a
+    // recorded human voice. We only keep two narrow rewrites here:
+    //
+    //  - quoted digraphs: "sh", "ch", "th" -> "shh"/"chuh"/"thh"
+    //    (TTS otherwise spells these as "ess aitch" etc.)
+    //  - bare digraph comma lists: "sh, ch, th" -> phonetic equivalents
     return String(text)
-      // "Blend these sounds: c - a - t" -> phoneticise each token
-      .replace(/(\b[a-z]{1,3}\b)(\s*-\s*\b[a-z]{1,3}\b)+/gi, (run) =>
-        run.split(/\s*-\s*/).map((tok) => PHONIC_SAY[tok.toLowerCase()] || tok).join(', ')
-      )
-      // Quoted phonic tokens: "sh", "ch", 'th'
-      .replace(/(["'])([a-z]{1,3})\1/gi, (_, q, tok) => PHONIC_SAY[tok.toLowerCase()] ? PHONIC_SAY[tok.toLowerCase()] : tok)
-      // Comma-list of digraphs: "sh, ch, th" anywhere in the sentence
+      .replace(/(["'])((?:sh|ch|th|ph|wh|ng|ck|qu))\1/gi, (_, q, tok) => PHONIC_SAY[tok.toLowerCase()])
       .replace(/\b((?:sh|ch|th|ph|wh|ng|ck|qu)(?:\s*,\s*(?:sh|ch|th|ph|wh|ng|ck|qu))+)\b/gi,
         (run) => run.split(/\s*,\s*/).map((t) => PHONIC_SAY[t.toLowerCase()]).join(', '));
   }
@@ -109,15 +109,35 @@ window.LessonPlayer = (function () {
   }
 
   // ── Speak / Record buttons ───────────────────────────────────────────
+  // Play a recorded audio file (real human voice). Used when content
+  // provides an `audio` URL - this is the gold standard for phonics
+  // because synthetic voices can't produce true phonemes well.
+  let currentAudio = null;
+  function playAudio(url) {
+    try { window.speechSynthesis.cancel(); } catch {}
+    if (currentAudio) { try { currentAudio.pause(); } catch {} }
+    const a = new Audio(url);
+    currentAudio = a;
+    a.play().catch(() => {});
+  }
+
+  // Speak via recorded audio if provided, else fall back to TTS.
+  function speakOrPlay(audioUrl, text, mute) {
+    if (audioUrl) return playAudio(audioUrl);
+    return speak(text, mute);
+  }
+
   // makeSpeakButton: a small 🔊 that re-reads a specific line.
-  function makeSpeakButton(text) {
+  // If `audioUrl` is provided, plays that recording instead of the
+  // synthetic voice.
+  function makeSpeakButton(text, audioUrl) {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'mini-btn speak-btn';
     b.title = 'Read aloud';
     b.setAttribute('aria-label', 'Read aloud');
     b.innerHTML = '<span aria-hidden="true">🔊</span><span class="mini-label">Listen</span>';
-    b.onclick = (ev) => { ev.preventDefault(); speak(text, false); };
+    b.onclick = (ev) => { ev.preventDefault(); speakOrPlay(audioUrl, text, false); };
     return b;
   }
 
@@ -239,16 +259,15 @@ window.LessonPlayer = (function () {
           label.textContent = e.label;
           const actions = document.createElement('div');
           actions.className = 'example-actions';
-          actions.appendChild(makeSpeakButton(e.say || `${e.show}. ${e.label}`));
+          actions.appendChild(makeSpeakButton(e.say || `${e.show}. ${e.label}`, e.audio));
           if (showRecExamples) actions.appendChild(makeRecordButton());
           div.append(show, label, actions);
           ex.appendChild(div);
         });
-        // Auto-read every teach screen on entry. Mute via the top-bar
-        // sound toggle (settings.muteSpeech). The legacy `readAloud`
-        // flag is no longer consulted here so the experience is
-        // consistent for early learners.
-        speak(t.say || t.intro, settings.muteSpeech);
+        // Auto-read every teach screen on entry. Prefers a recorded
+        // audio file if the content provides one; otherwise uses TTS.
+        // Muted by the top-bar sound toggle (settings.muteSpeech).
+        speakOrPlay(t.audio, t.say || t.intro, settings.muteSpeech);
         $('teach-replay').onclick = () => {
           const intro = t.say || t.intro;
           const ex = (t.examples || []).map((e) => e.say || `${e.show}, ${e.label}`).join('. ');
@@ -271,11 +290,12 @@ window.LessonPlayer = (function () {
         $('item-prompt').appendChild(promptText);
         const tools = document.createElement('span');
         tools.className = 'prompt-tools';
-        tools.appendChild(makeSpeakButton(it.say || it.prompt));
+        tools.appendChild(makeSpeakButton(it.say || it.prompt, it.audio));
         if (shouldShowRecord(it)) tools.appendChild(makeRecordButton());
         $('item-prompt').appendChild(tools);
-        // Auto-read every new slide. Muted only by the global sound toggle.
-        speak(it.say || it.prompt, settings.muteSpeech);
+        // Auto-read every new slide. Audio file wins over TTS if provided.
+        // Muted only by the global sound toggle.
+        speakOrPlay(it.audio, it.say || it.prompt, settings.muteSpeech);
 
         if (it.isInterleaved) {
           $('lesson-title').textContent = '🔁 Quick mix-up!';
