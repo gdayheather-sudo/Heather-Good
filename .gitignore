@@ -1,19 +1,43 @@
 # Dependencies
 node_modules/
 
+# Next.js
+.next/
+out/
+next-env.d.ts
+
 # Build output
 dist/
+build/
 
 # Environment — NEVER commit real keys
 .env
+.env.local
+.env.*.local
 
-# Pipeline output (generated files — commit if you want version history)
-output/cache/
-output/social-content/
-output/*.json
-output/*.md
-output/publish-log.json
+# Test harness output (gitignored, harness writes here)
+test-output/
+test-audio/
+
+# Legacy Etsy pipeline artefacts
+legacy/etsy-pipeline/output/cache/
+legacy/etsy-pipeline/output/social-content/
+legacy/etsy-pipeline/output/*.json
+legacy/etsy-pipeline/output/*.md
+legacy/etsy-pipeline/output/publish-log.json
+
+# Vercel
+.vercel/
+
+# IDE
+.idea/
+.vscode/
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
