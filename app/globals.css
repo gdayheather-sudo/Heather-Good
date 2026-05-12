@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    font-family: var(--font-dm-sans), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-paper-100 text-charcoal;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-dm-serif), Georgia, serif;
+    letter-spacing: -0.01em;
+  }
+
+  /* Tighter focus ring colour for keyboard navigation across the app. */
+  :focus-visible {
+    outline: 2px solid theme('colors.charcoal.DEFAULT');
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
