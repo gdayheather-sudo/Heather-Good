@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html, body {
+  background: #F7F4EF;
+  color: #2E2E2E;
+}
+
+body {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .serif {
+  font-family: var(--font-serif), serif;
+  letter-spacing: -0.01em;
+}
+
+/* Wave-and-dots motif: subtle background detail */
+.brand-wave {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(63, 83, 102, 0.12) 1px, transparent 0);
+  background-size: 18px 18px;
+}
