@@ -335,7 +335,7 @@
   function sopAsText(sop) {
     if (!sop) return '';
     const L = [];
-    L.push(sop.processName || 'SOP');
+    L.push(sop.processName || 'Process');
     L.push('');
     L.push('Purpose: ' + (sop.purpose || ''));
     L.push('Trigger: ' + (sop.trigger || ''));
@@ -403,7 +403,7 @@
     Promise.resolve()
       .then(() => navigator.clipboard.writeText(text))
       .then(() => {
-        showToast('Your SOP is on the clipboard. ' + pasteHint);
+        showToast('Your document is on the clipboard. ' + pasteHint);
         track('sop_exported', { format: 'gdocs' });
       })
       .catch(() => {
@@ -450,7 +450,7 @@
       }
       const url = URL.createObjectURL(blob);
       const filename =
-        (currentSop.processName || 'SOP').replace(/[^a-z0-9]/gi, '_').slice(0, 80) + '.docx';
+        (currentSop.processName || 'Process').replace(/[^a-z0-9]/gi, '_').slice(0, 80) + '.docx';
 
       if (placeholder && !placeholder.closed) {
         // iOS path: send the placeholder to the blob URL. Safari opens its
