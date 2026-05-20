@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Clarity Audit — The Clarity Hub</title>
+<meta name="description" content="A 90-minute deep-dive that turns your messy systems into a clear, AI-ready action plan. Founding rate for the first 5 founders." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --warm-white: #F7F4EF;
+    --charcoal: #2E2E2E;
+    --navy: #3F5366;
+    --sage: #8FA79A;
+    --clay: #C97E63;
+    --paper: #FBF9F5;
+    --muted: #6B6B6B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--warm-white);
+    color: var(--charcoal);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Paper grain */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.35;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.18 0 0 0 0 0.18 0 0 0 0 0.18 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  .container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ============ NAV ============ */
+  nav {
+    padding: 32px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--charcoal);
+    letter-spacing: -0.01em;
+  }
+  .logo em { color: var(--clay); font-style: italic; }
+  .nav-meta {
+    font-size: 12px;
+    color: var(--navy);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  /* ============ HERO ============ */
+  .hero { padding: 60px 0 100px; position: relative; }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    background: rgba(143, 167, 154, 0.18);
+    border: 1px solid rgba(143, 167, 154, 0.4);
+    border-radius: 100px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 36px;
+    font-weight: 500;
+  }
+  .hero-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--clay);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(44px, 7vw, 88px);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
+    color: var(--charcoal);
+    max-width: 900px;
+  }
+  h1 em {
+    color: var(--clay);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .hero-lede {
+    font-size: clamp(18px, 2vw, 22px);
+    line-height: 1.55;
+    color: var(--muted);
+    max-width: 620px;
+    margin-bottom: 48px;
+    font-weight: 300;
+  }
+
+  .cta-group {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--charcoal);
+    color: var(--warm-white);
+    padding: 18px 32px;
+    border: none;
+    border-radius: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary:hover {
+    background: var(--clay);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(201, 126, 99, 0.3);
+  }
+  .btn-primary svg { transition: transform 0.3s ease; }
+  .btn-primary:hover svg { transform: translateX(4px); }
+
+  .cta-meta {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* Wave-and-dots motif */
+  .wave-motif {
+    position: absolute;
+    top: 120px;
+    right: -60px;
+    width: 280px;
+    height: 280px;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  @media (max-width: 900px) { .wave-motif { width: 180px; height: 180px; right: -40px; top: 80px; opacity: 0.4; } }
+
+  /* ============ SECTION DIVIDER ============ */
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(46, 46, 46, 0.15), transparent);
+    margin: 0 0;
+  }
+
+  /* ============ THE PROBLEM ============ */
+  .problem {
+    padding: 100px 0;
+    background: var(--paper);
+    position: relative;
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--clay);
+    font-weight: 500;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--clay);
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: var(--charcoal);
+    margin-bottom: 40px;
+    max-width: 800px;
+  }
+  h2 em { color: var(--navy); font-style: italic; }
+
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  @media (max-width: 800px) { .problem-grid { grid-template-columns: 1fr; gap: 32px; } }
+
+  .problem-list {
+    list-style: none;
+    margin-top: 32px;
+  }
+  .problem-list li {
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(46, 46, 46, 0.1);
+    font-size: 16px;
+    color: var(--charcoal);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .problem-list li::before {
+    content: '—';
+    color: var(--clay);
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .problem-quote {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: clamp(22px, 2.4vw, 28px);
+    line-height: 1.4;
+    color: var(--navy);
+    padding-left: 32px;
+    border-left: 2px solid var(--clay);
+  }
+
+  /* ============ WHAT YOU GET ============ */
+  .deliverables {
+    padding: 120px 0;
+    position: relative;
+  }
+
+  .deliverable-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-top: 64px;
+  }
+  @media (max-width: 900px) { .deliverable-grid { grid-template-columns: 1fr; } }
+
+  .deliverable-card {
+    background: var(--paper);
+    border: 1px solid rgba(46, 46, 46, 0.08);
+    padding: 40px 32px;
+    border-radius: 8px;
+    position: relative;
+    transition: all 0.4s ease;
+  }
+  .deliverable-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--sage);
+    box-shadow: 0 20px 40px rgba(46, 46, 46, 0.08);
+  }
+
+  .deliverable-number {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 64px;
+    color: var(--sage);
+    line-height: 1;
+    margin-bottom: 24px;
+    opacity: 0.7;
+  }
+  .deliverable-card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    color: var(--charcoal);
+  }
+  .deliverable-card p {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  /* ============ HOW IT WORKS ============ */
+  .process {
+    padding: 120px 0;
+    background: var(--charcoal);
+    color: var(--warm-white);
+    position: relative;
+    overflow: hidden;
+  }
+  .process .section-label { color: var(--clay); }
+  .process h2 { color: var(--warm-white); }
+  .process h2 em { color: var(--sage); }
+
+  .process-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-top: 56px;
+    position: relative;
+  }
+  @media (max-width: 900px) { .process-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 500px) { .process-grid { grid-template-columns: 1fr; } }
+
+  .process-step {
+    padding: 32px 0;
+    border-top: 1px solid rgba(247, 244, 239, 0.2);
+  }
+  .process-step-num {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--clay);
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+  .process-step h4 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    margin-bottom: 12px;
+    color: var(--warm-white);
+  }
+  .process-step p {
+    font-size: 14px;
+    color: rgba(247, 244, 239, 0.7);
+    line-height: 1.6;
+  }
+
+  /* Process decorative dots */
+  .process-dots {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    opacity: 0.15;
+    pointer-events: none;
+  }
+
+  /* ============ WHO IT'S FOR ============ */
+  .fit {
+    padding: 120px 0;
+  }
+  .fit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    margin-top: 56px;
+  }
+  @media (max-width: 800px) { .fit-grid { grid-template-columns: 1fr; gap: 40px; } }
+
+  .fit-col h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .fit-col.yes h3 { color: var(--sage); }
+  .fit-col.no h3 { color: var(--clay); }
+
+  .fit-list {
+    list-style: none;
+  }
+  .fit-list li {
+    padding: 14px 0;
+    font-size: 16px;
+    color: var(--charcoal);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .fit-list li svg {
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  /* ============ ABOUT HEATHER ============ */
+  .about {
+    padding: 120px 0;
+    background: var(--paper);
+  }
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 64px;
+    align-items: center;
+  }
+  @media (max-width: 800px) { .about-grid { grid-template-columns: 1fr; } }
+
+  .about-avatar {
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, var(--sage), var(--navy));
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .about-avatar-initial {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 180px;
+    color: var(--warm-white);
+    opacity: 0.95;
+    line-height: 1;
+  }
+  .about-text p {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--charcoal);
+    margin-bottom: 20px;
+  }
+  .about-text p:first-of-type {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-style: italic;
+    color: var(--navy);
+    line-height: 1.5;
+  }
+
+  /* ============ PRICING / CTA ============ */
+  .pricing {
+    padding: 140px 0;
+    text-align: center;
+    position: relative;
+  }
+
+  .price-block {
+    max-width: 640px;
+    margin: 56px auto 0;
+    padding: 56px 48px;
+    background: var(--paper);
+    border: 1px solid rgba(46, 46, 46, 0.08);
+    border-radius: 12px;
+    position: relative;
+  }
+
+  .price-tag {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--clay);
+    color: var(--warm-white);
+    padding: 6px 18px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 600;
+    border-radius: 100px;
+  }
+
+  .price-amount {
+    font-family: 'DM Serif Display', serif;
+    font-size: 88px;
+    line-height: 1;
+    color: var(--charcoal);
+    margin: 12px 0 8px;
+  }
+  .price-amount .currency {
+    font-size: 32px;
+    vertical-align: top;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+  .price-amount .aud {
+    font-size: 20px;
+    color: var(--muted);
+    font-style: italic;
+    margin-left: 8px;
+  }
+
+  .price-after {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    font-style: italic;
+  }
+
+  .price-includes {
+    text-align: left;
+    margin: 32px 0;
+    padding: 24px 0;
+    border-top: 1px solid rgba(46, 46, 46, 0.1);
+    border-bottom: 1px solid rgba(46, 46, 46, 0.1);
+  }
+  .price-includes li {
+    list-style: none;
+    padding: 10px 0;
+    font-size: 15px;
+    color: var(--charcoal);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .price-includes li svg { flex-shrink: 0; margin-top: 3px; color: var(--sage); }
+
+  .spots-left {
+    font-size: 13px;
+    color: var(--clay);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-top: 24px;
+  }
+
+  /* ============ FAQ ============ */
+  .faq {
+    padding: 120px 0;
+  }
+  .faq-list {
+    margin-top: 56px;
+    max-width: 800px;
+  }
+  .faq-item {
+    border-bottom: 1px solid rgba(46, 46, 46, 0.12);
+    padding: 24px 0;
+  }
+  .faq-q {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--charcoal);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none;
+    transition: color 0.3s;
+  }
+  .faq-q:hover { color: var(--clay); }
+  .faq-q::-webkit-details-marker { display: none; }
+  .faq-q::after {
+    content: '+';
+    font-family: 'DM Sans', sans-serif;
+    font-size: 28px;
+    color: var(--clay);
+    transition: transform 0.3s;
+    margin-left: 16px;
+  }
+  .faq-item[open] .faq-q::after { transform: rotate(45deg); }
+  .faq-a {
+    margin-top: 16px;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.7;
+    padding-right: 40px;
+  }
+
+  /* ============ FINAL CTA ============ */
+  .final-cta {
+    padding: 120px 0;
+    background: var(--navy);
+    color: var(--warm-white);
+    text-align: center;
+  }
+  .final-cta h2 { color: var(--warm-white); margin: 0 auto 24px; }
+  .final-cta h2 em { color: var(--clay); }
+  .final-cta p {
+    font-size: 18px;
+    color: rgba(247, 244, 239, 0.8);
+    max-width: 540px;
+    margin: 0 auto 40px;
+  }
+  .final-cta .btn-primary {
+    background: var(--clay);
+  }
+  .final-cta .btn-primary:hover {
+    background: var(--warm-white);
+    color: var(--charcoal);
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    padding: 48px 0 40px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+  footer a { color: var(--navy); text-decoration: none; }
+
+  /* ============ ANIMATIONS ============ */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.8s ease forwards;
+  }
+  .fade-up.delay-1 { animation-delay: 0.1s; }
+  .fade-up.delay-2 { animation-delay: 0.2s; }
+  .fade-up.delay-3 { animation-delay: 0.3s; }
+  .fade-up.delay-4 { animation-delay: 0.4s; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+  <nav>
+    <div class="logo">The <em>Clarity</em> Hub</div>
+    <div class="nav-meta">Founding Cohort · 2026</div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <svg class="wave-motif" viewBox="0 0 200 200" fill="none">
+      <path d="M10 100 Q 50 60, 100 100 T 190 100" stroke="#8FA79A" stroke-width="1.5" fill="none"/>
+      <path d="M10 120 Q 50 80, 100 120 T 190 120" stroke="#C97E63" stroke-width="1" fill="none" opacity="0.7"/>
+      <circle cx="30" cy="160" r="2" fill="#3F5366"/>
+      <circle cx="60" cy="170" r="2" fill="#3F5366"/>
+      <circle cx="90" cy="160" r="2" fill="#3F5366"/>
+      <circle cx="120" cy="170" r="2" fill="#C97E63"/>
+      <circle cx="150" cy="160" r="2" fill="#3F5366"/>
+      <circle cx="180" cy="170" r="2" fill="#3F5366"/>
+    </svg>
+
+    <div class="hero-badge fade-up">Now open · 5 founding spots</div>
+    <h1 class="fade-up delay-1">
+      The <em>Clarity Audit</em>
+    </h1>
+    <p class="hero-lede fade-up delay-2">
+      A 90-minute deep dive that turns your messy systems into a clear, AI-ready action plan — so you finally know <em>which three things to fix first</em>.
+    </p>
+    <div class="cta-group fade-up delay-3">
+      <a href="#book" class="btn-primary">
+        Apply for a spot
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <span class="cta-meta">Founding rate · $297 AUD</span>
+    </div>
+  </section>
+</div>
+
+<div class="divider"></div>
+
+<!-- PROBLEM -->
+<section class="problem">
+  <div class="container">
+    <div class="section-label">The problem</div>
+    <div class="problem-grid">
+      <div>
+        <h2>You're <em>winging the systems side</em> of your business — and you know it.</h2>
+        <ul class="problem-list">
+          <li>14 tabs open. 3 half-finished Notion docs. A Google Drive that even you can't navigate.</li>
+          <li>You keep hearing "you should use AI for that" but have no idea where to start.</li>
+          <li>You've built the business on instinct — but instinct doesn't scale.</li>
+          <li>Every "system" you try lasts a fortnight before you abandon it.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="problem-quote">
+          You don't need another course, another tool, or another framework. You need someone to look at <em>your</em> mess and tell you the three things that actually matter.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT YOU GET -->
+<section class="deliverables">
+  <div class="container">
+    <div class="section-label">What you walk away with</div>
+    <h2>Not a generic checklist. <em>A plan built for your business.</em></h2>
+
+    <div class="deliverable-grid">
+      <div class="deliverable-card">
+        <div class="deliverable-number">01</div>
+        <h3>Your Systems Map</h3>
+        <p>A clear picture of every tool, process, and workflow you currently use — what's duplicated, what's missing, and what's quietly costing you hours.</p>
+      </div>
+      <div class="deliverable-card">
+        <div class="deliverable-number">02</div>
+        <h3>The Priority Three</h3>
+        <p>The three highest-leverage fixes to make in the next 30 days — with AI-first recommendations, tool picks, and the prompts to run.</p>
+      </div>
+      <div class="deliverable-card">
+        <div class="deliverable-number">03</div>
+        <h3>Your 30-Day Sequence</h3>
+        <p>Week-by-week action plan with linked templates, tools, and resources. Built to actually be followed — not filed away.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="process">
+  <div class="container">
+    <div class="section-label">How it works</div>
+    <h2>Four steps. <em>One clear plan.</em></h2>
+
+    <div class="process-grid">
+      <div class="process-step">
+        <div class="process-step-num">Step 01</div>
+        <h4>Apply</h4>
+        <p>Tell me about your business and where you're stuck. 15 minutes of your time, no commitment.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-step-num">Step 02</div>
+        <h4>Book & pay</h4>
+        <p>If we're a fit, I'll send a booking link. You pick a time, pay the founding rate, and we lock it in.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-step-num">Step 03</div>
+        <h4>The 90-minute call</h4>
+        <p>We get on Zoom. I look under the hood. You leave with the recording and a head full of clarity.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-step-num">Step 04</div>
+        <h4>Your written report</h4>
+        <p>Within 5 days, your full Clarity Report lands in your inbox. Plus a 20-min check-in at week 4.</p>
+      </div>
+    </div>
+
+    <svg class="process-dots" width="120" height="40" viewBox="0 0 120 40">
+      <circle cx="10" cy="20" r="2" fill="#C97E63"/>
+      <circle cx="30" cy="20" r="2" fill="#8FA79A"/>
+      <circle cx="50" cy="20" r="2" fill="#C97E63"/>
+      <circle cx="70" cy="20" r="2" fill="#8FA79A"/>
+      <circle cx="90" cy="20" r="2" fill="#C97E63"/>
+      <circle cx="110" cy="20" r="2" fill="#8FA79A"/>
+    </svg>
+  </div>
+</section>
+
+<!-- FIT CHECK -->
+<section class="fit">
+  <div class="container">
+    <div class="section-label">Is this for you?</div>
+    <h2>Honest fit check.</h2>
+
+    <div class="fit-grid">
+      <div class="fit-col yes">
+        <h3>Yes, if you're…</h3>
+        <ul class="fit-list">
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8FA79A" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>
+            A solo founder 0–2 years in (or about to launch)
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8FA79A" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>
+            Excellent at your craft but disorganised behind the scenes
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8FA79A" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>
+            Curious about AI but unsure where it actually helps
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8FA79A" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>
+            Willing to actually implement what we map out
+          </li>
+        </ul>
+      </div>
+      <div class="fit-col no">
+        <h3>Not for you if…</h3>
+        <ul class="fit-list">
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C97E63" stroke-width="2.5"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            You want someone to build the systems for you
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C97E63" stroke-width="2.5"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            You're an established business with a full ops team
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C97E63" stroke-width="2.5"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            You're looking for a magic-bullet AI tool
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C97E63" stroke-width="2.5"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            You're not ready to make decisions yet
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about">
+  <div class="container">
+    <div class="section-label">Who you're working with</div>
+    <h2>Hi, I'm <em>Heather</em>.</h2>
+
+    <div class="about-grid" style="margin-top: 40px;">
+      <div class="about-avatar">
+        <span class="about-avatar-initial">H</span>
+      </div>
+      <div class="about-text">
+        <p>I've spent the last decade building systems inside finance, government, education, and not-for-profit organisations — and the last twelve months building AI-powered tools alongside it.</p>
+        <p>I'm a Finance Officer by day, finishing a Master of Professional Accounting by night, and building The Clarity Hub in the spaces between. I built this because I kept watching brilliant founders drown in their own systems — and no one was teaching them how to use AI without it becoming another shiny distraction.</p>
+        <p>The Clarity Audit is where I do my best work: looking at the whole picture, finding the three threads that matter, and handing back a plan you can actually run with.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="book">
+  <div class="container">
+    <div class="section-label" style="justify-content: center;">The investment</div>
+    <h2 style="margin: 0 auto 16px;">Founding rate. <em>First five only.</em></h2>
+
+    <div class="price-block">
+      <div class="price-tag">Founding cohort</div>
+      <div class="price-amount">
+        <span class="currency">$</span>297<span class="aud">AUD</span>
+      </div>
+      <div class="price-after">Moves to $497 after the first five spots are filled</div>
+
+      <ul class="price-includes">
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>
+          Pre-call intake form & business prep
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>
+          90-minute live Zoom call (recording yours to keep)
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>
+          Written Clarity Report within 5 days
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>
+          20-minute follow-up call at week four
+        </li>
+      </ul>
+
+      <!--
+        ============================================================
+        STRIPE PLACEHOLDER — REPLACE href BELOW WITH STRIPE LINK
+        ============================================================
+        Once you have your Stripe Payment Link, swap the href value
+        on the line below from "#apply" to your Stripe URL, e.g.:
+        href="https://buy.stripe.com/your-link-here"
+        ============================================================
+      -->
+      <a href="#apply" class="btn-primary" style="margin-top: 16px;">
+        Apply for a spot
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+
+      <div class="spots-left">· 5 spots remaining ·</div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq">
+  <div class="container">
+    <div class="section-label">Questions</div>
+    <h2>Things people ask.</h2>
+
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary class="faq-q">Why "founding rate"?</summary>
+        <div class="faq-a">I'm testing the audit format with the first five founders. You get the same depth of work — at a lower price — in exchange for honest feedback that helps me refine it. After the first five, the price moves to $497.</div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">Do I need to know anything about AI before the call?</summary>
+        <div class="faq-a">Not at all. Some of the best audits I do are with founders who've barely touched it. We meet you where you are — the goal is to identify where AI <em>actually</em> helps you, not to add complexity for the sake of it.</div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">What if my "systems" are just chaos?</summary>
+        <div class="faq-a">That's exactly the right starting point. The audit is designed for founders who don't have systems yet — or whose systems have grown organically and need a fresh look.</div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">How is this different from a business coach?</summary>
+        <div class="faq-a">A business coach helps you think. I help you build. The audit is operationally focused: tools, workflows, AI integration, what to automate, what to kill. Less mindset, more architecture.</div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">Can I get a refund if it's not useful?</summary>
+        <div class="faq-a">Yes. If you don't walk away from the call with at least three concrete actions that will save you time or money — I'll refund the call in full. No drama.</div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">When are the calls available?</summary>
+        <div class="faq-a">Weeknights from 6:30pm and Saturday mornings (AEST). Once you apply, I'll send you a booking link with available windows.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="container">
+    <h2>One ninety-minute call. <em>One clear plan.</em></h2>
+    <p>Five founding spots, then the price moves. If you've been waiting for someone to look at the whole picture — this is it.</p>
+    <a href="#book" class="btn-primary">
+      Apply for a spot
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    © 2026 The Clarity Hub · <a href="mailto:hello@clarityhub.com.au">hello@clarityhub.com.au</a>
+  </div>
+</footer>
+
+</body>
+</html>

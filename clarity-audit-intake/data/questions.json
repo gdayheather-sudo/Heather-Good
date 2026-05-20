@@ -1,0 +1,90 @@
+{
+  "intake": {
+    "version": "1.0",
+    "estimated_minutes": 15,
+    "title": "Your Pre-Audit Brain Dump",
+    "intro": "Eight questions. Voice or type — your call. Don't overthink any of them — first instinct is usually the most useful answer. You can save and come back anytime.",
+    "questions": [
+      {
+        "id": "q1_business",
+        "order": 1,
+        "section": "Your business",
+        "label": "Tell me about your business in one paragraph.",
+        "helper": "What do you actually do, who do you serve, and how long have you been doing it? Skip the polished pitch — talk like you're telling a friend.",
+        "voice_prompt": "In one go, tell me what your business does, who it serves, and how long you've been at it.",
+        "min_words": 30,
+        "input_type": "longform"
+      },
+      {
+        "id": "q2_revenue_engine",
+        "order": 2,
+        "section": "Your business",
+        "label": "How do you actually make money right now?",
+        "helper": "Walk me through your offers, pricing, and roughly what % of revenue comes from each. Be honest — it can be one offer, three offers, or 'mostly one thing and some random side stuff.'",
+        "voice_prompt": "Talk me through how money actually comes in. What do you sell, what does it cost, and roughly what's the revenue split?",
+        "min_words": 25,
+        "input_type": "longform"
+      },
+      {
+        "id": "q3_typical_week",
+        "order": 3,
+        "section": "How you work",
+        "label": "Walk me through a typical work week.",
+        "helper": "What do your days look like? When are you on, when are you off? What's the rhythm of your work — client calls, content creation, admin? Where does your time actually go?",
+        "voice_prompt": "Walk me through a typical work week — what your days look like and where your time actually goes.",
+        "min_words": 50,
+        "input_type": "longform"
+      },
+      {
+        "id": "q4_repetitive",
+        "order": 4,
+        "section": "The repetitive stuff",
+        "label": "What do you do over and over and over?",
+        "helper": "List the tasks you find yourself doing repeatedly — every client, every week, every project. Onboarding emails. Proposal docs. Social posts. Reporting. Invoicing. Anything that has a pattern. The more the merrier here.",
+        "voice_prompt": "List every repetitive task you can think of — anything you do over and over. The boring stuff. The 'I've done this 50 times' stuff. Don't filter.",
+        "min_words": 40,
+        "input_type": "longform"
+      },
+      {
+        "id": "q5_bottlenecks",
+        "order": 5,
+        "section": "Where it breaks",
+        "label": "Where does your business get stuck or break down?",
+        "helper": "What are the bottlenecks? The things you avoid? The tasks that always run late? The handoffs that drop balls? The bits that drain you the most? Be specific — 'admin' is too vague; 'chasing invoices on the 15th of every month' is gold.",
+        "voice_prompt": "Where does your business get stuck or break down? What do you avoid, what runs late, what drains you?",
+        "min_words": 40,
+        "input_type": "longform"
+      },
+      {
+        "id": "q6_tools_stack",
+        "order": 6,
+        "section": "Your current setup",
+        "label": "What tools are you using right now?",
+        "helper": "Everything. Email platform, CRM, accounting, calendar, project mgmt, social schedulers, AI tools, the random spreadsheet you can't let go of. Note any tools you're paying for but barely using.",
+        "voice_prompt": "List every tool you're using right now — email, CRM, accounting, project tools, AI, spreadsheets, everything. Including ones you're paying for but barely using.",
+        "min_words": 25,
+        "input_type": "longform"
+      },
+      {
+        "id": "q7_ai_comfort",
+        "order": 7,
+        "section": "AI today",
+        "label": "How are you currently using AI (if at all)?",
+        "helper": "What AI tools have you tried? What's worked, what hasn't? What are you curious about but haven't touched? Be honest if the answer is 'almost nothing' — that's a great starting point.",
+        "voice_prompt": "Honestly — how are you using AI right now? What have you tried, what's worked, what's still a mystery?",
+        "min_words": 25,
+        "input_type": "longform"
+      },
+      {
+        "id": "q8_magic_wand",
+        "order": 8,
+        "section": "What you actually want",
+        "label": "If you could wave a wand and fix three things in your business by next month — what would they be?",
+        "helper": "No tools, no constraints, no 'realistic.' Just: what would make the biggest difference to your day-to-day if it was solved?",
+        "voice_prompt": "Wave a wand — what three things in your business would you fix by next month if you could? No constraints, no realistic. Just the wishlist.",
+        "min_words": 30,
+        "input_type": "longform"
+      }
+    ]
+  }
+}
