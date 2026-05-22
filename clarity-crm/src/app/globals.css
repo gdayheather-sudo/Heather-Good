@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Clarity Hub brand mapped to shadcn semantic tokens */
+    --background: 38 30% 95%; /* Warm White #F7F4EF */
+    --foreground: 0 0% 18%; /* Charcoal #2E2E2E */
+
+    --card: 40 33% 98%;
+    --card-foreground: 0 0% 18%;
+
+    --popover: 40 33% 98%;
+    --popover-foreground: 0 0% 18%;
+
+    --primary: 209 24% 32%; /* Muted Navy #3F5366 */
+    --primary-foreground: 38 30% 96%;
+
+    --secondary: 147 12% 61%; /* Sage #8FA79A */
+    --secondary-foreground: 0 0% 18%;
+
+    --muted: 38 20% 90%;
+    --muted-foreground: 209 10% 40%;
+
+    --accent: 147 18% 88%;
+    --accent-foreground: 0 0% 18%;
+
+    --destructive: 16 49% 59%; /* Soft Clay #C97E63 — emphasis */
+    --destructive-foreground: 38 30% 96%;
+
+    --border: 38 15% 85%;
+    --input: 38 15% 85%;
+    --ring: 209 24% 32%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-serif;
+  }
+}
