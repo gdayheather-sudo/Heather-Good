@@ -8,7 +8,10 @@ import {
   updatePostStatus,
   updateSchedule,
   updatePostedUrl,
+  updatePostBody,
 } from "@/lib/actions";
+import { Markdown } from "@/components/markdown";
+import { Textarea } from "@/components/ui/textarea";
 import {
   PLATFORM_LABELS,
   STATUS_LABELS,
@@ -107,6 +110,12 @@ function PostCard({ post }: { post: PlatformPost }) {
     post.scheduled_for ? toLocalInput(post.scheduled_for) : ""
   );
   const [url, setUrl] = useState(post.posted_url ?? "");
+  const [editing, setEditing] = useState(false);
+  const [draftBody, setDraftBody] = useState(post.body ?? "");
+
+  const isArticle = post.platform === "substack_article";
+  const words = post.body ? post.body.trim().split(/\s+/).filter(Boolean).length : 0;
+  const readMins = Math.max(1, Math.round(words / 200));
 
   async function run(key: string, fn: () => Promise<void>) {
     setBusy(key);
@@ -118,17 +127,72 @@ function PostCard({ post }: { post: PlatformPost }) {
     }
   }
 
+  async function saveBody() {
+    await run("save", () =>
+      updatePostBody(post.id, post.content_unit_id, draftBody)
+    );
+    setEditing(false);
+  }
+
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">
           {PLATFORM_LABELS[post.platform] ?? post.platform}
+          {isArticle && words > 0 && (
+            <span className="ml-2 text-xs font-normal text-muted-foreground">
+              {words} words · {readMins} min read
+            </span>
+          )}
         </CardTitle>
         <Badge variant="clay">{STATUS_LABELS[post.status]}</Badge>
       </CardHeader>
       <CardContent className="space-y-4">
-        {post.body && (
-          <p className="whitespace-pre-wrap text-sm">{post.body}</p>
+        {editing ? (
+          <div className="space-y-2">
+            <Textarea
+              value={draftBody}
+              onChange={(e) => setDraftBody(e.target.value)}
+              rows={isArticle ? 20 : 8}
+              className="font-mono text-xs"
+            />
+            <div className="flex gap-2">
+              <Button size="sm" onClick={saveBody} disabled={busy === "save"}>
+                {busy === "save" ? "Saving…" : "Save"}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setDraftBody(post.body ?? "");
+                  setEditing(false);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          post.body && (
+            <div className="space-y-2">
+              {isArticle ? (
+                <Markdown>{post.body}</Markdown>
+              ) : (
+                <p className="whitespace-pre-wrap text-sm">{post.body}</p>
+              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs"
+                onClick={() => {
+                  setDraftBody(post.body ?? "");
+                  setEditing(true);
+                }}
+              >
+                Edit
+              </Button>
+            </div>
+          )
         )}
 
         {post.hook_variants.length > 0 && (
@@ -152,9 +216,9 @@ function PostCard({ post }: { post: PlatformPost }) {
               <summary className="cursor-pointer text-xs font-medium uppercase text-muted-foreground">
                 Graphic brief
               </summary>
-              <pre className="mt-2 whitespace-pre-wrap rounded bg-muted p-3 text-xs">
-                {post.graphic_brief}
-              </pre>
+              <div className="mt-2 rounded bg-muted p-3">
+                <Markdown className="prose-sm">{post.graphic_brief}</Markdown>
+              </div>
             </details>
           ) : (
             <Button

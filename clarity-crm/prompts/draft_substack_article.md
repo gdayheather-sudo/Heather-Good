@@ -27,11 +27,7 @@ Using the seed idea and the full interview transcript, write a long-form how-to 
 
 # Output format
 
-Return **valid JSON only**, no prose around it:
-
-```json
-{
-  "body": "the full article in markdown, with line breaks as \\n",
-  "hook_variants": []
-}
-```
+Return the **article body in Markdown only** — no JSON, no preamble, no
+explanation before or after. Use `##` headings for the major sections, a
+numbered list for the steps, and end with the "— Heather" sign-off. Do not wrap
+the article in a code fence.

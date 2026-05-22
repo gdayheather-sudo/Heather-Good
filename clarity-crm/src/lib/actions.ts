@@ -12,6 +12,12 @@ import {
   type Track,
 } from "@/lib/types";
 
+// Remove a single surrounding ```/```markdown fence if the model added one.
+function stripCodeFence(text: string): string {
+  const fenced = text.match(/^```(?:markdown|md)?\s*\n([\s\S]*?)\n```$/);
+  return fenced ? fenced[1].trim() : text;
+}
+
 // ---------------------------------------------------------------------------
 // Seed capture
 // ---------------------------------------------------------------------------
@@ -104,7 +110,11 @@ export async function generateDraft(contentUnitId: string) {
     .map((b) => b.text)
     .join("");
 
-  const parsed = parseJsonReply<{ body: string; hook_variants?: string[] }>(text);
+  // Track A returns JSON (body + hooks); Track B returns raw markdown — the
+  // long-form article is far more reliable without a JSON wrapper.
+  const { body, hook_variants } = isTrackA
+    ? parseJsonReply<{ body: string; hook_variants?: string[] }>(text)
+    : { body: stripCodeFence(text.trim()), hook_variants: [] as string[] };
 
   // Upsert the primary post for this unit + platform.
   const { data: existing } = await supabase
@@ -117,8 +127,8 @@ export async function generateDraft(contentUnitId: string) {
   const row = {
     content_unit_id: contentUnitId,
     platform,
-    body: parsed.body,
-    hook_variants: parsed.hook_variants ?? [],
+    body,
+    hook_variants: hook_variants ?? [],
     status: "drafting" as PostStatus,
   };
 
@@ -281,6 +291,16 @@ export async function updateSchedule(
     .eq("id", postId);
   revalidatePath(`/unit/${contentUnitId}`);
   revalidatePath("/dashboard");
+}
+
+export async function updatePostBody(
+  postId: string,
+  contentUnitId: string,
+  body: string
+) {
+  const supabase = await createClient();
+  await supabase.from("platform_posts").update({ body }).eq("id", postId);
+  revalidatePath(`/unit/${contentUnitId}`);
 }
 
 export async function updatePostedUrl(

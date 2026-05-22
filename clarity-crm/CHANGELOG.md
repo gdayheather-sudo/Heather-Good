@@ -1,5 +1,37 @@
 # Changelog
 
+## Phase 2 — Track B end-to-end (Substack article)
+
+### Built
+
+- **Robust long-form drafting:** the Substack article draft now returns raw
+  Markdown instead of JSON. Embedding a 600–1100-word article inside a JSON
+  string was fragile (unescaped quotes/newlines); raw Markdown is reliable.
+  `generateDraft` branches by track — Track A still parses JSON for body + hooks.
+- **Editorial rendering:** article bodies render as brand-styled Markdown
+  (`@tailwindcss/typography` + `react-markdown`/`remark-gfm`), headings in
+  DM Serif Display, links in Soft Clay. Track A bodies stay plain (their line
+  breaks matter). Graphic briefs render as Markdown too.
+- **Inline body editing:** every post body has an Edit → textarea → Save flow
+  (`updatePostBody`), so the AI draft is a starting point Heather can refine —
+  essential for the article as an editorial product.
+- **Article-aware layout:** Track B units render single-column so the article
+  gets full reading width (Track A keeps the side-by-side variant view).
+- **Reading meta:** word count + estimated read time on the article card.
+- **Track B graphic briefs:** hero + per-step visuals generated via
+  `graphic_brief_substack_article` (one pasteable Markdown brief covering all
+  graphics); Track B correctly produces no variants.
+
+### Skipped / deferred
+
+- Per-graphic brief rows (each step as its own `platform_posts`-style record)
+  were not added — the single Markdown brief covers hero + steps and matches the
+  paste-into-graphics workflow. Revisit only if Heather wants per-step status.
+- Same live-provisioning caveat as Phase 1: code is committed; Heather runs the
+  Supabase migration and sets env vars to exercise Track B in production.
+
+---
+
 ## Phase 1 — Schema + Auth + Track A end-to-end
 
 ### Built
