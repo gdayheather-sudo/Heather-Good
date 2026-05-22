@@ -1,0 +1,12 @@
+# Netlify build config — the deployable app (Clarity CRM) lives in clarity-crm/.
+# `base` makes Netlify install deps and build from that subdirectory.
+[build]
+  base = "clarity-crm"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Next.js runtime (SSR, route handlers, middleware). Netlify installs this plugin.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
