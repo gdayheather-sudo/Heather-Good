@@ -1,5 +1,39 @@
 # Changelog
 
+## Phase 3 — Status tracking + dashboard + cadence gap detection
+
+### Built
+
+- **Brisbane-time engine** (`src/lib/time.ts`): exact UTC+10 (no DST) helpers
+  for the current week (Sun→Sat), per-day keys, slot occurrence instants, and
+  time labels. All "this week" / gap logic now runs in Heather's timezone.
+- **"This week" dashboard, split by track:** each track shows the week's days
+  that have cadence anchors or published posts. Anchors display coverage
+  (Scheduled / Ready / Needs attention / Missed); scheduled and posted items
+  link through to their content unit.
+- **Real cadence gap detection:** an anchor is *covered* if a `scheduled` post
+  of that platform lands on the same Brisbane day, or a `ready` post is in the
+  pool (consumed earliest-slot-first). An **upcoming** uncovered anchor surfaces
+  as a "Needs attention" card; past uncovered anchors show as "Missed". This
+  replaces Phase 1's coarse "any ready post counts" approximation.
+- **30-day auto-archive** (`src/lib/archive.ts`): a content unit drops out of
+  the active view 30 days after it's fully posted (all outputs `posted`, last
+  post >30 days ago). Idempotent, non-destructive; runs on dashboard/ideas load.
+- **Pipeline counts per track:** active units + drafting / ready / scheduled /
+  posted tallies.
+
+### Skipped / deferred
+
+- **Cadence editing in settings** (add/edit/toggle slots) remains read-only —
+  the seeded cadence covers the v1 single-user need; editing is a small
+  follow-up if Heather wants to change anchors.
+- **No background cron:** auto-archive reconciles on page load rather than on a
+  schedule (fine for a single-user tool; revisit if it ever runs unattended).
+- Gap lead-time is "any upcoming uncovered anchor this week" rather than a
+  literal "by Saturday morning" rule — simpler and, in practice, equivalent.
+
+---
+
 ## Phase 2 — Track B end-to-end (Substack article)
 
 ### Built

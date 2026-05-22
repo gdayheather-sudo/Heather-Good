@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Nav } from "@/components/nav";
 import { createClient } from "@/lib/supabase/server";
+import { reconcileArchives } from "@/lib/archive";
 import {
   TRACK_LABELS,
   STATUS_LABELS,
@@ -45,6 +46,7 @@ export default async function IdeasPage({
   searchParams: Promise<{ track?: string }>;
 }) {
   const { track } = await searchParams;
+  await reconcileArchives();
   const supabase = await createClient();
 
   let query = supabase

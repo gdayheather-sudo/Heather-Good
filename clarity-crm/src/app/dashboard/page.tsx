@@ -1,9 +1,17 @@
 import Link from "next/link";
 import { Nav } from "@/components/nav";
 import { createClient } from "@/lib/supabase/server";
+import { reconcileArchives } from "@/lib/archive";
+import {
+  brisbaneWeek,
+  brisbaneDateKey,
+  slotInstant,
+  brisbaneTimeLabel,
+} from "@/lib/time";
 import {
   PLATFORM_LABELS,
   TRACK_LABELS,
+  TRACK_PLATFORMS,
   type CadenceSlot,
   type PostStatus,
   type Track,
@@ -18,41 +26,100 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-type Row = {
-  track: Track;
-  platform_posts: { platform: string; status: PostStatus }[];
+type PostRow = {
+  id: string;
+  platform: string;
+  status: PostStatus;
+  scheduled_for: string | null;
+  posted_at: string | null;
+  content_unit_id: string;
+  content_units: { track: Track; seed_text: string };
 };
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
+type Coverage = "scheduled" | "ready" | "gap" | "missed";
 
-  const [{ data: unitsData }, { data: slotsData }] = await Promise.all([
+const TRACKS: Track[] = ["linkedin_led", "substack_article"];
+
+export default async function DashboardPage() {
+  await reconcileArchives();
+
+  const supabase = await createClient();
+  const now = new Date();
+  const week = brisbaneWeek(now);
+
+  const [{ data: slotsData }, { data: postsData }] = await Promise.all([
+    supabase.from("cadence_slots").select("*").eq("active", true),
     supabase
-      .from("content_units")
-      .select("track, platform_posts(platform, status)")
-      .is("archived_at", null),
-    supabase
-      .from("cadence_slots")
-      .select("*")
-      .eq("active", true)
-      .order("day_of_week", { ascending: true }),
+      .from("platform_posts")
+      .select(
+        "id, platform, status, scheduled_for, posted_at, content_unit_id, content_units!inner(track, seed_text, archived_at)"
+      )
+      .is("content_units.archived_at", null),
   ]);
 
-  const units = (unitsData as Row[] | null) ?? [];
   const slots = (slotsData as CadenceSlot[] | null) ?? [];
-  const allPosts = units.flatMap((u) => u.platform_posts);
+  const posts = (postsData as PostRow[] | null) ?? [];
+
+  // Index scheduled posts by platform + Brisbane day; pool ready posts by platform.
+  const scheduledByKey = new Map<string, PostRow>();
+  const postedByKey = new Map<string, PostRow[]>();
+  const readyPool = new Map<string, number>();
+  for (const p of posts) {
+    if (p.status === "scheduled" && p.scheduled_for) {
+      scheduledByKey.set(
+        `${p.platform}|${brisbaneDateKey(new Date(p.scheduled_for))}`,
+        p
+      );
+    }
+    if (p.status === "posted" && p.posted_at) {
+      const k = brisbaneDateKey(new Date(p.posted_at));
+      postedByKey.set(k, [...(postedByKey.get(k) ?? []), p]);
+    }
+    if (p.status === "ready") {
+      readyPool.set(p.platform, (readyPool.get(p.platform) ?? 0) + 1);
+    }
+  }
+
+  // Coverage for each cadence anchor this week, consuming the ready pool in
+  // chronological order so the earliest upcoming slots get filled first.
+  const pool = new Map(readyPool);
+  type Anchor = {
+    slot: CadenceSlot;
+    day: (typeof week)[number];
+    coverage: Coverage;
+    instant: Date;
+    covering?: PostRow;
+  };
+  const anchors: Anchor[] = [];
+  for (const day of week) {
+    for (const slot of slots.filter((s) => s.day_of_week === day.dow)) {
+      const instant = slotInstant(day.key, slot.time_of_day);
+      const covering = scheduledByKey.get(`${slot.platform}|${day.key}`);
+      let coverage: Coverage;
+      if (covering) {
+        coverage = "scheduled";
+      } else if ((pool.get(slot.platform) ?? 0) > 0) {
+        pool.set(slot.platform, pool.get(slot.platform)! - 1);
+        coverage = "ready";
+      } else {
+        coverage = instant.getTime() >= now.getTime() ? "gap" : "missed";
+      }
+      anchors.push({ slot, day, coverage, instant, covering });
+    }
+  }
+
+  const gaps = anchors
+    .filter((a) => a.coverage === "gap")
+    .sort((a, b) => a.instant.getTime() - b.instant.getTime());
 
   // Pipeline counts per track.
-  const tracks: Track[] = ["linkedin_led", "substack_article"];
-  const pipeline = tracks.map((t) => {
-    const trackUnits = units.filter((u) => u.track === t);
-    const posts = trackUnits.flatMap((u) => u.platform_posts);
-    const count = (s: PostStatus) => posts.filter((p) => p.status === s).length;
+  const pipeline = TRACKS.map((t) => {
+    const trackPosts = posts.filter((p) => p.content_units.track === t);
+    const units = new Set(trackPosts.map((p) => p.content_unit_id)).size;
+    const count = (s: PostStatus) => trackPosts.filter((p) => p.status === s).length;
     return {
       track: t,
-      ideas: trackUnits.length,
+      units,
       drafting: count("drafting"),
       ready: count("ready"),
       scheduled: count("scheduled"),
@@ -60,67 +127,139 @@ export default async function DashboardPage() {
     };
   });
 
-  // Cadence gaps: a slot needs attention if no post for that platform is
-  // ready or scheduled. (Brisbane-local timing refinement is Phase 3.)
-  const readyOrScheduledByPlatform = new Map<string, number>();
-  for (const p of allPosts) {
-    if (p.status === "ready" || p.status === "scheduled") {
-      readyOrScheduledByPlatform.set(
-        p.platform,
-        (readyOrScheduledByPlatform.get(p.platform) ?? 0) + 1
-      );
-    }
-  }
-  const slotStatus = slots.map((s) => ({
-    slot: s,
-    covered: (readyOrScheduledByPlatform.get(s.platform) ?? 0) > 0,
-  }));
-
   return (
     <>
       <Nav />
       <main className="container max-w-5xl py-8">
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl text-navy">This week</h1>
+          <div>
+            <h1 className="text-2xl text-navy">This week</h1>
+            <p className="text-sm text-muted-foreground">
+              {week[0].short} {week[0].key.slice(5)} – {week[6].short}{" "}
+              {week[6].key.slice(5)} · Brisbane time
+            </p>
+          </div>
           <Button asChild>
             <Link href="/new">New seed</Link>
           </Button>
         </div>
 
-        {/* Cadence slots + gaps */}
-        <section className="mb-8">
-          <h2 className="mb-3 text-sm font-medium uppercase text-muted-foreground">
-            Cadence
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {slotStatus.map(({ slot, covered }) => (
-              <Card
-                key={slot.id}
-                className={covered ? "" : "border-clay/60 bg-clay/5"}
-              >
-                <CardContent className="flex items-center justify-between p-4">
-                  <div>
+        {/* Needs attention */}
+        {gaps.length > 0 && (
+          <section className="mb-8">
+            <h2 className="mb-3 text-sm font-medium uppercase text-muted-foreground">
+              Needs attention
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {gaps.map((g) => (
+                <Card key={g.slot.id} className="border-clay/60 bg-clay/5">
+                  <CardContent className="p-4">
                     <p className="font-medium">
-                      {PLATFORM_LABELS[slot.platform] ?? slot.platform}
+                      {PLATFORM_LABELS[g.slot.platform] ?? g.slot.platform}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {DAYS[slot.day_of_week]} {slot.time_of_day.slice(0, 5)}
+                    <p className="text-sm text-muted-foreground">
+                      {g.day.full} {brisbaneTimeLabel(g.slot.time_of_day)} — nothing
+                      ready or scheduled
                     </p>
-                  </div>
-                  {covered ? (
-                    <Badge variant="sage">Covered</Badge>
-                  ) : (
-                    <Badge variant="clay">Needs attention</Badge>
+                    <Button asChild size="sm" variant="outline" className="mt-3">
+                      <Link href="/new">Fill this slot</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* This week split by track */}
+        <section className="mb-8 grid gap-6 lg:grid-cols-2">
+          {TRACKS.map((track) => {
+            const platforms = TRACK_PLATFORMS[track];
+            const rows = week
+              .map((day) => {
+                const dayAnchors = anchors.filter(
+                  (a) => a.day.key === day.key && platforms.includes(a.slot.platform)
+                );
+                const posted = (postedByKey.get(day.key) ?? []).filter((p) =>
+                  platforms.includes(p.platform)
+                );
+                return { day, dayAnchors, posted };
+              })
+              .filter((r) => r.dayAnchors.length > 0 || r.posted.length > 0);
+
+            return (
+              <Card key={track}>
+                <CardHeader>
+                  <CardTitle className="text-base">{TRACK_LABELS[track]}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {rows.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      Nothing scheduled this week.
+                    </p>
                   )}
+                  {rows.map(({ day, dayAnchors, posted }) => (
+                    <div key={day.key} className="text-sm">
+                      <p
+                        className={`mb-1 font-medium ${
+                          day.isToday ? "text-clay" : ""
+                        }`}
+                      >
+                        {day.full}
+                        {day.isToday && " · today"}
+                      </p>
+                      <div className="space-y-1">
+                        {dayAnchors.map((a) => {
+                          const label = (
+                            <>
+                              <span>
+                                {PLATFORM_LABELS[a.slot.platform] ?? a.slot.platform}{" "}
+                                <span className="text-muted-foreground">
+                                  {brisbaneTimeLabel(a.slot.time_of_day)}
+                                </span>
+                              </span>
+                              <CoverageBadge coverage={a.coverage} />
+                            </>
+                          );
+                          return a.covering ? (
+                            <Link
+                              key={a.slot.id}
+                              href={`/unit/${a.covering.content_unit_id}`}
+                              className="flex items-center justify-between rounded border border-border px-2 py-1 hover:bg-muted"
+                            >
+                              {label}
+                            </Link>
+                          ) : (
+                            <div
+                              key={a.slot.id}
+                              className="flex items-center justify-between rounded border border-border px-2 py-1"
+                            >
+                              {label}
+                            </div>
+                          );
+                        })}
+                        {posted.map((p) => (
+                          <Link
+                            key={p.id}
+                            href={`/unit/${p.content_unit_id}`}
+                            className="flex items-center justify-between rounded border border-border px-2 py-1 hover:bg-muted"
+                          >
+                            <span className="truncate">
+                              {PLATFORM_LABELS[p.platform] ?? p.platform}:{" "}
+                              <span className="text-muted-foreground">
+                                {p.content_units.seed_text}
+                              </span>
+                            </span>
+                            <Badge variant="sage">Posted</Badge>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
-            ))}
-            {slots.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No cadence slots yet — they seed automatically on first sign-in.
-              </p>
-            )}
-          </div>
+            );
+          })}
         </section>
 
         {/* Pipeline counts */}
@@ -132,10 +271,8 @@ export default async function DashboardPage() {
             {pipeline.map((p) => (
               <Card key={p.track}>
                 <CardHeader>
-                  <CardTitle className="text-base">
-                    {TRACK_LABELS[p.track]}
-                  </CardTitle>
-                  <CardDescription>{p.ideas} ideas</CardDescription>
+                  <CardTitle className="text-base">{TRACK_LABELS[p.track]}</CardTitle>
+                  <CardDescription>{p.units} active units</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-2 text-sm">
                   <Stat label="Drafting" value={p.drafting} />
@@ -150,6 +287,19 @@ export default async function DashboardPage() {
       </main>
     </>
   );
+}
+
+function CoverageBadge({ coverage }: { coverage: Coverage }) {
+  switch (coverage) {
+    case "scheduled":
+      return <Badge variant="sage">Scheduled</Badge>;
+    case "ready":
+      return <Badge variant="sage">Ready</Badge>;
+    case "gap":
+      return <Badge variant="clay">Needs attention</Badge>;
+    default:
+      return <Badge variant="outline">Missed</Badge>;
+  }
 }
 
 function Stat({ label, value }: { label: string; value: number }) {
