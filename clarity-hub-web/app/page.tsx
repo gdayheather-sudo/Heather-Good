@@ -10,8 +10,8 @@ export default function HomePage() {
             The Clarity Hub
           </p>
           <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl leading-tight max-w-3xl">
-            AI systems and SOPs for founders who are brilliant at what they do —
-            and tired of being the only one who knows how it&apos;s done.
+            Simplifying AI for small business — so the tech works for you,
+            not the other way around.
           </h1>
           <p className="mt-6 text-lg text-charcoal/80 max-w-2xl">
             Document what&apos;s in your head, automate what drains you, and
