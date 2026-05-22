@@ -6,6 +6,9 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # .env.example holds placeholder keys (e.g. sk-ant-xxxx); keep the post-build
+  # secrets scanner from flagging the sample file.
+  SECRETS_SCAN_OMIT_PATHS = ".env.example"
 
 # Next.js runtime (SSR, route handlers, middleware). Netlify installs this plugin.
 [[plugins]]
