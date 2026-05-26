@@ -1,0 +1,17 @@
+{
+  "name": "Journey Together",
+  "short_name": "Journey",
+  "description": "Community-powered travel companions for people with disabilities.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B1F2A",
+  "theme_color": "#0E6C7E",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
