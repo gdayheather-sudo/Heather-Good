@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SharePoint Submission Tracker</title>
+<!--
+  Single-page SharePoint submission tracker.
+  Signs in with your Microsoft 365 account (MSAL.js, browser-only) and pulls
+  items from any number of SharePoint lists via Microsoft Graph, then merges
+  them into one filterable dashboard so you can track progression in one place.
+
+  Setup: see README.md. In short — register an Entra (Azure AD) SPA app,
+  serve this file from http://localhost:8000, click the gear, enter your
+  Tenant ID / Client ID / Site URL / lists, then Sign in.
+-->
+<script src="https://alcdn.msauth.net/browser/3.10.0/js/msal-browser.min.js"></script>
+<style>
+  :root {
+    --bg: #f3f5f8;
+    --panel: #ffffff;
+    --ink: #1b2733;
+    --muted: #5b6b7b;
+    --line: #e2e8f0;
+    --brand: #0f6cbd;       /* SharePoint blue */
+    --brand-dark: #0a4d87;
+    --shadow: 0 1px 3px rgba(16,40,70,.08), 0 4px 16px rgba(16,40,70,.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.45 "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+  }
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; z-index: 20;
+  }
+  header h1 { font-size: 17px; margin: 0; font-weight: 600; }
+  header .sub { color: var(--muted); font-size: 12px; margin-top: 1px; }
+  .spacer { flex: 1; }
+  button {
+    font: inherit; cursor: pointer; border: 1px solid var(--line);
+    background: var(--panel); color: var(--ink);
+    padding: 7px 13px; border-radius: 6px; transition: .12s;
+  }
+  button:hover { background: #f0f4f9; }
+  button.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+  button.primary:hover { background: var(--brand-dark); }
+  button:disabled { opacity: .5; cursor: default; }
+  .icon-btn { padding: 7px 10px; }
+
+  main { padding: 18px 20px 60px; max-width: 1500px; margin: 0 auto; }
+
+  /* Summary cards */
+  #summary { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 16px; min-width: 120px; box-shadow: var(--shadow);
+  }
+  .card .n { font-size: 22px; font-weight: 700; }
+  .card .l { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .4px; }
+
+  /* Controls */
+  #controls {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 16px; box-shadow: var(--shadow);
+  }
+  #controls input[type=search], #controls select {
+    font: inherit; padding: 7px 10px; border: 1px solid var(--line);
+    border-radius: 6px; background: #fff; color: var(--ink);
+  }
+  #search { min-width: 240px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line);
+    background: #fff; cursor: pointer; font-size: 12.5px; user-select: none;
+  }
+  .chip.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .chip-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+  /* Table */
+  .table-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: auto; box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #f8fafc; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; position: sticky; top: 0; }
+  th .arrow { font-size: 10px; opacity: .6; }
+  tr:hover td { background: #f8fbff; }
+  td a { color: var(--brand); text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+  .status-pill {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; white-space: nowrap;
+    background: #eef2f6; color: #41526a;
+  }
+  .src-tag { font-size: 11.5px; color: var(--muted); }
+
+  /* Board view */
+  #board { display: none; gap: 14px; overflow-x: auto; padding-bottom: 10px; }
+  #board.on { display: flex; }
+  .col { min-width: 260px; flex: 1; background: #eef2f6; border-radius: 10px; padding: 10px; }
+  .col h3 { margin: 2px 4px 10px; font-size: 13px; display: flex; justify-content: space-between; }
+  .col h3 .cnt { color: var(--muted); font-weight: 600; }
+  .ticket { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin-bottom: 8px; box-shadow: var(--shadow); }
+  .ticket .t { font-weight: 600; margin-bottom: 4px; }
+  .ticket .meta { color: var(--muted); font-size: 11.5px; }
+
+  /* Settings modal */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(16,30,50,.45); z-index: 50; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow:auto;}
+  .overlay.on { display: flex; }
+  .modal { background: var(--panel); border-radius: 12px; width: 100%; max-width: 640px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+  .modal header { position: static; border-radius: 12px 12px 0 0; }
+  .modal .body { padding: 18px 22px; }
+  .modal label { display: block; font-weight: 600; margin: 14px 0 4px; font-size: 13px; }
+  .modal .hint { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .modal input, .modal textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; }
+  .modal textarea { min-height: 110px; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12.5px; }
+  .modal .actions { display: flex; gap: 10px; justify-content: flex-end; padding: 14px 22px 20px; }
+
+  #status-bar { font-size: 12.5px; color: var(--muted); margin: 0 2px 12px; min-height: 18px; }
+  #status-bar.error { color: #b42318; }
+  .empty { text-align: center; color: var(--muted); padding: 60px 20px; }
+  .who { font-size: 12.5px; color: var(--muted); }
+  .spin { display:inline-block; width:13px; height:13px; border:2px solid var(--line); border-top-color: var(--brand); border-radius:50%; animation: sp .7s linear infinite; vertical-align:-2px; margin-right:6px;}
+  @keyframes sp { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>📋 SharePoint Submission Tracker</h1>
+    <div class="sub">All list submissions, one view</div>
+  </div>
+  <div class="spacer"></div>
+  <span class="who" id="who"></span>
+  <button class="icon-btn" id="btnRefresh" title="Refresh" disabled>🔄 Refresh</button>
+  <button class="icon-btn" id="btnSettings" title="Settings">⚙️ Settings</button>
+  <button class="primary" id="btnAuth">Sign in</button>
+</header>
+
+<main>
+  <div id="status-bar"></div>
+  <div id="summary"></div>
+
+  <div id="controls" style="display:none">
+    <input type="search" id="search" placeholder="Search title, person, status…" />
+    <select id="sortSel" title="Sort by">
+      <option value="modified">Sort: Last modified</option>
+      <option value="created">Sort: Created date</option>
+      <option value="title">Sort: Title</option>
+      <option value="status">Sort: Status</option>
+      <option value="source">Sort: List</option>
+    </select>
+    <div class="chip-group" id="listChips"></div>
+    <div class="chip-group" id="statusChips"></div>
+    <div class="spacer" style="flex:1"></div>
+    <div class="chip-group">
+      <span class="chip on" id="viewTable">Table</span>
+      <span class="chip" id="viewBoard">Board</span>
+    </div>
+  </div>
+
+  <div class="table-wrap" id="tableWrap" style="display:none">
+    <table>
+      <thead><tr id="theadRow"></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div id="board"></div>
+
+  <div class="empty" id="welcome">
+    <h2>Welcome 👋</h2>
+    <p>Sign in with your Microsoft 365 account to load submissions across your SharePoint lists.</p>
+    <p>First time? Click <strong>⚙️ Settings</strong> to enter your site and lists.<br/>
+       Setup instructions are in <code>README.md</code>.</p>
+  </div>
+</main>
+
+<!-- Settings modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <header><h1>⚙️ Settings</h1></header>
+    <div class="body">
+      <label>Tenant ID (Directory ID)</label>
+      <input id="cfgTenant" placeholder="e.g. contoso.onmicrosoft.com or a GUID" />
+      <div class="hint">From Entra admin centre → App registration → Overview.</div>
+
+      <label>Client ID (Application ID)</label>
+      <input id="cfgClient" placeholder="GUID of your registered SPA app" />
+
+      <label>SharePoint site URL</label>
+      <input id="cfgSite" placeholder="https://contoso.sharepoint.com/sites/TeamSite" />
+      <div class="hint">The site whose lists you want to track.</div>
+
+      <label>Lists to track (one per line)</label>
+      <textarea id="cfgLists" placeholder="Submissions
+Approvals: Status
+Project Intake: Stage"></textarea>
+      <div class="hint">List display name. Optionally add <code>: FieldName</code> to say which column holds the status/stage (defaults to auto-detect: Status, Stage, ApprovalStatus…).</div>
+    </div>
+    <div class="actions">
+      <button id="cfgCancel">Cancel</button>
+      <button class="primary" id="cfgSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ---------------- Config persistence ---------------- */
+const CFG_KEY = "sp-tracker-cfg-v1";
+const defaultCfg = { tenant: "", clientId: "", siteUrl: "", lists: [] };
+
+function loadCfg() {
+  try { return Object.assign({}, defaultCfg, JSON.parse(localStorage.getItem(CFG_KEY) || "{}")); }
+  catch { return Object.assign({}, defaultCfg); }
+}
+function saveCfg(c) { localStorage.setItem(CFG_KEY, JSON.stringify(c)); }
+let cfg = loadCfg();
+
+/* lists are stored as [{name, statusField}] */
+function parseListsText(text) {
+  return text.split("\n").map(l => l.trim()).filter(Boolean).map(line => {
+    const i = line.lastIndexOf(":");
+    if (i > 0) return { name: line.slice(0, i).trim(), statusField: line.slice(i + 1).trim() };
+    return { name: line, statusField: "" };
+  });
+}
+function listsToText(lists) {
+  return (lists || []).map(l => l.statusField ? `${l.name}: ${l.statusField}` : l.name).join("\n");
+}
+
+/* ---------------- DOM helpers ---------------- */
+const $ = id => document.getElementById(id);
+function setStatus(msg, isError) {
+  const el = $("status-bar");
+  el.innerHTML = msg;
+  el.className = isError ? "error" : "";
+}
+const STATUS_FIELD_CANDIDATES = ["Status", "Stage", "ApprovalStatus", "SubmissionStatus", "State", "Phase", "_ModerationStatus"];
+
+/* ---------------- MSAL auth ---------------- */
+let msalApp = null;
+let account = null;
+
+function initMsal() {
+  if (!cfg.clientId || !cfg.tenant) return false;
+  msalApp = new msal.PublicClientApplication({
+    auth: {
+      clientId: cfg.clientId,
+      authority: `https://login.microsoftonline.com/${cfg.tenant}`,
+      redirectUri: window.location.origin + window.location.pathname,
+    },
+    cache: { cacheLocation: "sessionStorage" },
+  });
+  return true;
+}
+
+const GRAPH_SCOPES = ["Sites.Read.All"];
+
+async function getToken() {
+  const req = { scopes: GRAPH_SCOPES, account };
+  try {
+    const r = await msalApp.acquireTokenSilent(req);
+    return r.accessToken;
+  } catch (e) {
+    const r = await msalApp.acquireTokenPopup(req);
+    return r.accessToken;
+  }
+}
+
+async function graph(path, token) {
+  const url = path.startsWith("http") ? path : `https://graph.microsoft.com/v1.0${path}`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Graph ${res.status}: ${t.slice(0, 300)}`);
+  }
+  return res.json();
+}
+
+/* ---------------- Data loading ---------------- */
+let allItems = [];      // normalized records
+let activeLists = new Set();
+let activeStatuses = new Set();
+
+function siteUrlToGraphPath(siteUrl) {
+  // https://contoso.sharepoint.com/sites/TeamSite  ->  contoso.sharepoint.com:/sites/TeamSite
+  const u = new URL(siteUrl);
+  const path = u.pathname.replace(/\/$/, "");
+  return `/sites/${u.hostname}:${path}`;
+}
+
+function pickStatus(fields, explicitField) {
+  if (explicitField && fields[explicitField] != null && fields[explicitField] !== "")
+    return String(fields[explicitField]);
+  for (const c of STATUS_FIELD_CANDIDATES)
+    if (fields[c] != null && fields[c] !== "") return String(fields[c]);
+  return "—";
+}
+function pickPerson(fields) {
+  for (const c of ["AssignedTo", "Owner", "SubmittedBy", "Author", "Editor", "Requestor"]) {
+    const v = fields[c];
+    if (v) return typeof v === "object" ? (v.LookupValue || v.Title || v.displayName || "") : String(v);
+  }
+  return "";
+}
+
+async function loadAll() {
+  if (!msalApp) { setStatus("Add your Tenant ID and Client ID in ⚙️ Settings.", true); return; }
+  if (!cfg.siteUrl || !cfg.lists.length) { setStatus("Add a site URL and at least one list in ⚙️ Settings.", true); return; }
+
+  $("btnRefresh").disabled = true;
+  setStatus(`<span class="spin"></span> Connecting to SharePoint…`);
+  try {
+    const token = await getToken();
+
+    // Resolve site id
+    const site = await graph(siteUrlToGraphPath(cfg.siteUrl), token);
+    const siteId = site.id;
+
+    // Resolve lists on the site once (to map display name -> id and webUrl)
+    const listsResp = await graph(`/sites/${siteId}/lists?$select=id,name,displayName,webUrl`, token);
+    const byName = {};
+    for (const l of listsResp.value) { byName[l.displayName] = l; byName[l.name] = l; }
+
+    const collected = [];
+    for (const wanted of cfg.lists) {
+      const meta = byName[wanted.name];
+      if (!meta) { console.warn("List not found:", wanted.name); continue; }
+      setStatus(`<span class="spin"></span> Loading “${wanted.name}”…`);
+
+      let next = `/sites/${siteId}/lists/${meta.id}/items?$expand=fields&$top=200`;
+      while (next) {
+        const page = await graph(next, token);
+        for (const it of page.value) {
+          const f = it.fields || {};
+          collected.push({
+            id: `${meta.id}:${it.id}`,
+            title: f.Title || f.LinkTitle || f.FileLeafRef || `Item ${it.id}`,
+            status: pickStatus(f, wanted.statusField),
+            person: pickPerson(f),
+            source: wanted.name,
+            created: it.createdDateTime || f.Created || null,
+            modified: it.lastModifiedDateTime || f.Modified || null,
+            webUrl: it.webUrl || meta.webUrl,
+            fields: f,
+          });
+        }
+        next = page["@odata.nextLink"] || null;
+      }
+    }
+
+    allItems = collected;
+    buildFilters();
+    render();
+    const when = new Date().toLocaleTimeString();
+    setStatus(`Loaded <strong>${allItems.length}</strong> submissions from ${cfg.lists.length} list(s). Updated ${when}.`);
+  } catch (e) {
+    console.error(e);
+    setStatus("Error: " + e.message, true);
+  } finally {
+    $("btnRefresh").disabled = false;
+  }
+}
+
+/* ---------------- Filters & rendering ---------------- */
+function uniq(arr) { return [...new Set(arr)]; }
+
+function buildFilters() {
+  const lists = uniq(allItems.map(i => i.source));
+  const statuses = uniq(allItems.map(i => i.status));
+  activeLists = new Set(lists);
+  activeStatuses = new Set(statuses);
+
+  const lc = $("listChips"); lc.innerHTML = "";
+  lists.forEach(name => {
+    const c = document.createElement("span");
+    c.className = "chip on"; c.textContent = name;
+    c.onclick = () => { c.classList.toggle("on"); c.classList.contains("on") ? activeLists.add(name) : activeLists.delete(name); render(); };
+    lc.appendChild(c);
+  });
+
+  const sc = $("statusChips"); sc.innerHTML = "";
+  statuses.forEach(st => {
+    const c = document.createElement("span");
+    c.className = "chip on"; c.textContent = st;
+    c.onclick = () => { c.classList.toggle("on"); c.classList.contains("on") ? activeStatuses.add(st) : activeStatuses.delete(st); render(); };
+    sc.appendChild(c);
+  });
+}
+
+function currentRows() {
+  const q = $("search").value.trim().toLowerCase();
+  let rows = allItems.filter(i =>
+    activeLists.has(i.source) && activeStatuses.has(i.status) &&
+    (!q || `${i.title} ${i.person} ${i.status} ${i.source}`.toLowerCase().includes(q))
+  );
+  const sort = $("sortSel").value;
+  const cmp = {
+    modified: (a, b) => new Date(b.modified || 0) - new Date(a.modified || 0),
+    created:  (a, b) => new Date(b.created || 0) - new Date(a.created || 0),
+    title:    (a, b) => a.title.localeCompare(b.title),
+    status:   (a, b) => a.status.localeCompare(b.status),
+    source:   (a, b) => a.source.localeCompare(b.source),
+  }[sort];
+  return rows.sort(cmp);
+}
+
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, { year: "2-digit", month: "short", day: "numeric" }) : "—"; }
+
+function render() {
+  const rows = currentRows();
+
+  // summary
+  const summary = $("summary");
+  const byStatus = {};
+  rows.forEach(r => byStatus[r.status] = (byStatus[r.status] || 0) + 1);
+  summary.innerHTML = `<div class="card"><div class="n">${rows.length}</div><div class="l">Showing</div></div>` +
+    Object.entries(byStatus).sort((a,b)=>b[1]-a[1]).slice(0,6)
+      .map(([s, n]) => `<div class="card"><div class="n">${n}</div><div class="l">${escapeHtml(s)}</div></div>`).join("");
+
+  // table
+  const thead = $("theadRow");
+  thead.innerHTML = ["Title", "Status", "List", "Assigned / By", "Modified", "Created", ""]
+    .map(h => `<th>${h}</th>`).join("");
+  $("tbody").innerHTML = rows.map(r => `
+    <tr>
+      <td>${escapeHtml(r.title)}</td>
+      <td><span class="status-pill" style="${statusColor(r.status)}">${escapeHtml(r.status)}</span></td>
+      <td><span class="src-tag">${escapeHtml(r.source)}</span></td>
+      <td>${escapeHtml(r.person || "—")}</td>
+      <td>${fmtDate(r.modified)}</td>
+      <td>${fmtDate(r.created)}</td>
+      <td>${r.webUrl ? `<a href="${r.webUrl}" target="_blank" rel="noopener">Open ↗</a>` : ""}</td>
+    </tr>`).join("") || `<tr><td colspan="7" class="empty">No submissions match your filters.</td></tr>`;
+
+  // board
+  const board = $("board");
+  const groups = {};
+  rows.forEach(r => (groups[r.status] = groups[r.status] || []).push(r));
+  board.innerHTML = Object.entries(groups).map(([status, items]) => `
+    <div class="col">
+      <h3><span><span class="status-pill" style="${statusColor(status)}">${escapeHtml(status)}</span></span><span class="cnt">${items.length}</span></h3>
+      ${items.map(r => `
+        <div class="ticket">
+          <div class="t">${r.webUrl ? `<a href="${r.webUrl}" target="_blank" rel="noopener">${escapeHtml(r.title)}</a>` : escapeHtml(r.title)}</div>
+          <div class="meta">${escapeHtml(r.source)}${r.person ? " · " + escapeHtml(r.person) : ""} · ${fmtDate(r.modified)}</div>
+        </div>`).join("")}
+    </div>`).join("");
+
+  $("controls").style.display = "flex";
+  $("tableWrap").style.display = $("board").classList.contains("on") ? "none" : "block";
+  $("welcome").style.display = "none";
+}
+
+// deterministic soft color per status string
+function statusColor(s) {
+  const key = s.toLowerCase();
+  const map = [
+    [/(approv|complete|done|publish|closed|live)/, "#1f9d55", "#e6f6ec"],
+    [/(reject|denied|fail|cancel)/, "#b42318", "#fdeceb"],
+    [/(pending|review|await|submit|progress|draft|new|open)/, "#9a6700", "#fbf3d9"],
+  ];
+  for (const [re, fg, bg] of map) if (re.test(key)) return `color:${fg};background:${bg}`;
+  // fallback hashed hue
+  let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360;
+  return `color:hsl(${h},45%,32%);background:hsl(${h},60%,94%)`;
+}
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+
+/* ---------------- Auth UI wiring ---------------- */
+async function refreshAuthUi() {
+  const signedIn = !!account;
+  $("btnAuth").textContent = signedIn ? "Sign out" : "Sign in";
+  $("btnRefresh").disabled = !signedIn;
+  $("who").textContent = signedIn ? (account.name || account.username) : "";
+}
+
+async function signIn() {
+  if (!initMsal()) { openSettings(); setStatus("Enter Tenant ID and Client ID first.", true); return; }
+  try {
+    const r = await msalApp.loginPopup({ scopes: GRAPH_SCOPES });
+    account = r.account;
+    msalApp.setActiveAccount(account);
+    await refreshAuthUi();
+    loadAll();
+  } catch (e) { setStatus("Sign-in failed: " + e.message, true); }
+}
+async function signOut() {
+  try { await msalApp.logoutPopup(); } catch {}
+  account = null; allItems = [];
+  $("tableWrap").style.display = "none"; $("board").classList.remove("on"); $("controls").style.display = "none";
+  $("summary").innerHTML = ""; $("welcome").style.display = "block";
+  refreshAuthUi(); setStatus("");
+}
+
+/* ---------------- Settings modal ---------------- */
+function openSettings() {
+  $("cfgTenant").value = cfg.tenant;
+  $("cfgClient").value = cfg.clientId;
+  $("cfgSite").value = cfg.siteUrl;
+  $("cfgLists").value = listsToText(cfg.lists);
+  $("overlay").classList.add("on");
+}
+function closeSettings() { $("overlay").classList.remove("on"); }
+function saveSettings() {
+  cfg = {
+    tenant: $("cfgTenant").value.trim(),
+    clientId: $("cfgClient").value.trim(),
+    siteUrl: $("cfgSite").value.trim(),
+    lists: parseListsText($("cfgLists").value),
+  };
+  saveCfg(cfg);
+  closeSettings();
+  account = null; initMsal(); refreshAuthUi();
+  setStatus("Settings saved. Click <strong>Sign in</strong> to load submissions.");
+}
+
+/* ---------------- Boot ---------------- */
+window.addEventListener("DOMContentLoaded", async () => {
+  $("btnAuth").onclick = () => (account ? signOut() : signIn());
+  $("btnRefresh").onclick = loadAll;
+  $("btnSettings").onclick = openSettings;
+  $("cfgCancel").onclick = closeSettings;
+  $("cfgSave").onclick = saveSettings;
+  $("search").oninput = render;
+  $("sortSel").onchange = render;
+  $("viewTable").onclick = () => { $("viewTable").classList.add("on"); $("viewBoard").classList.remove("on"); $("board").classList.remove("on"); render(); };
+  $("viewBoard").onclick = () => { $("viewBoard").classList.add("on"); $("viewTable").classList.remove("on"); $("board").classList.add("on"); render(); };
+  $("overlay").onclick = e => { if (e.target === $("overlay")) closeSettings(); };
+
+  if (initMsal()) {
+    // handle redirect (if redirect flow ever used) & restore session
+    try { await msalApp.handleRedirectPromise(); } catch {}
+    const accts = msalApp.getAllAccounts();
+    if (accts.length) { account = accts[0]; msalApp.setActiveAccount(account); }
+    await refreshAuthUi();
+    if (account) loadAll();
+  } else {
+    setStatus("Welcome! Open ⚙️ Settings to configure your SharePoint site and lists.");
+  }
+});
+</script>
+</body>
+</html>
