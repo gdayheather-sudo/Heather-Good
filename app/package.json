@@ -1,0 +1,15 @@
+{
+  "name": "ethical-shopping-companion",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MVP web app — scores any product against the user's own priorities, showing the evidence tier and source for every fact.",
+  "scripts": {
+    "dev": "node serve.js",
+    "start": "node serve.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

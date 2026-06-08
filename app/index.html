@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ethical Shopping Companion</title>
+    <meta name="description" content="Scores any product against YOUR priorities — ingredients, materials, packaging, environment, labour, price — showing the evidence tier and source for every fact." />
+
+    <!-- Tailwind via Play CDN: zero build step for the MVP. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React + htm via ESM CDN. htm lets us write components with no JSX build. -->
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.3.1",
+          "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+          "htm": "https://esm.sh/htm@3.1.1"
+        }
+      }
+    </script>
+
+    <style>
+      input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; height: 1rem; width: 1rem; border-radius: 9999px; background: #4f46e5; cursor: pointer; }
+      input[type='range']::-moz-range-thumb { height: 1rem; width: 1rem; border: none; border-radius: 9999px; background: #4f46e5; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>This app needs JavaScript enabled.</noscript>
+    <script type="module" src="./src/ui/app.js"></script>
+  </body>
+</html>
