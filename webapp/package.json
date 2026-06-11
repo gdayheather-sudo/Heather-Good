@@ -1,0 +1,22 @@
+{
+  "name": "social-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Social Studio — a local web app to create, generate and schedule social media posts across multiple brands and platforms using Claude and ChatGPT.",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node --experimental-sqlite --disable-warning=ExperimentalWarning server/index.js",
+    "dev": "node --experimental-sqlite --disable-warning=ExperimentalWarning --watch server/index.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
+    "dotenv": "^16.4.7",
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "openai": "^6.42.0"
+  }
+}
