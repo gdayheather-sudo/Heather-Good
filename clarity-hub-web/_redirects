@@ -1,6 +1,4 @@
-# Proxy the Founder Clarity Profile app from clarity-tools.netlify.app.
-# 200! is a transparent rewrite (URL stays as clarityhub.com.au/founder-profile)
-# and forces this rule to take precedence. The Next.js app sets basePath to
-# /founder-profile so paths line up on both sides.
-/founder-profile/*  https://clarity-tools.netlify.app/founder-profile/:splat  200!
-/founder-profile    https://clarity-tools.netlify.app/founder-profile         200!
+# Redirect the Founder Clarity Profile app to its Netlify home.
+# Plain 301s (no !) — visitors land on clarity-tools.netlify.app.
+/founder-profile/*  https://clarity-tools.netlify.app/founder-profile/:splat  301
+/founder-profile    https://clarity-tools.netlify.app/founder-profile         301
